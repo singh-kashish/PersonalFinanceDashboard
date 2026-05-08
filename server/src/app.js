@@ -1,15 +1,12 @@
 const express = require('express')
 
-require('dotenv').config();
-
 const app = express();
+const healthRoutes = require('./routes/health.routes')
 
-const PORT = process.env.PORT || 3000;
+// Middlewares
+app.use(express.json())
 
-app.get("/",(req,res)=>{
-    res.send("hello")
-})
+//Routes
+app.use('/',healthRoutes)
 
-app.listen(PORT,()=>{
-    console.log(`Server Listening on Port-${PORT}`)
-})
+module.exports = app;
