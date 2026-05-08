@@ -278,7 +278,7 @@ export type UserCreateInput = {
   name?: string | null
   password: string
   createdAt?: Date | string
-  updatedAt?: Date | string
+  updatedAt: Date | string
 }
 
 export type UserUncheckedCreateInput = {
@@ -287,7 +287,7 @@ export type UserUncheckedCreateInput = {
   name?: string | null
   password: string
   createdAt?: Date | string
-  updatedAt?: Date | string
+  updatedAt: Date | string
 }
 
 export type UserUpdateInput = {
@@ -313,7 +313,7 @@ export type UserCreateManyInput = {
   name?: string | null
   password: string
   createdAt?: Date | string
-  updatedAt?: Date | string
+  updatedAt: Date | string
 }
 
 export type UserUpdateManyMutationInput = {
