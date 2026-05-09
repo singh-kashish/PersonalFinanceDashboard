@@ -3,3 +3,4 @@ server/.env
 /generated/prisma
 .env
 .gitignore
+.vscode/
