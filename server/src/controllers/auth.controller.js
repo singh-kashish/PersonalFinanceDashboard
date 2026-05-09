@@ -1,6 +1,7 @@
-const {signupSchema} = require("../validators/auth.validator");
+// auth.controller
+const {signupSchema,loginSchema} = require("../validators/auth.validator");
 
-const {signupService} = require("../services/auth.service")
+const {signupService, loginService} = require("../services/auth.service")
 
 const signupController = async (req,res) =>{
     try{
@@ -15,11 +16,29 @@ const signupController = async (req,res) =>{
 
         // Send response
         res.status(201).json(result)
-        //Call Service
         
     } catch(error){
         return res.status(400).json({message:error.message})
     }
 };
 
-module.exports = signupController
+const loginController = async (req,res) =>{
+    try{
+        // Validate req.body with loginSchema
+        const parsedBody = loginSchema.safeParse(req.body);
+        // If incorrect schema send res(400)
+        if(!parsedBody.success){
+            return res.status(400).json({message:parsedBody.error.issues[0].message || 'Validation Error'})
+        }
+        // If correct schema, call service
+        const result = await loginService(parsedBody.data)
+
+        // Send response
+        res.status(200).json(result)
+
+    }catch(error){
+        return res.status(400).json({message:error.message})
+    }
+}
+
+module.exports = {signupController,loginController}
