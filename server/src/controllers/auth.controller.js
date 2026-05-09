@@ -6,7 +6,7 @@ const signupController = async (req,res) =>{
     try{
         // Validate req body
         const validatedData = signupSchema.safeParse(req.body)
-        console.log(validatedData);
+        
         if(!validatedData.success){
             return res.status(400).json({message:validatedData.error.issues[0].message || 'Validation Error'})
         }
