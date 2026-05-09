@@ -41,4 +41,12 @@ const loginController = async (req,res) =>{
     }
 }
 
-module.exports = {signupController,loginController}
+const currentUserController = async (req,res) =>{
+    try{
+        return res.status(200).json({user:req.user});
+    } catch(error){
+        return res.status(400).json({message:'JWT issue'})
+    }
+}
+
+module.exports = {signupController,loginController,currentUserController}
