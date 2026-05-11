@@ -50,4 +50,40 @@ const getTransactionsService = async(parameters,userId)=>{
     }};
 }
 
-module.exports = {createTransactionService,getTransactionService,getTransactionsService}
+const deleteTransactionService = async(transactionId,userId)=>{
+    const existingTransaction =
+    await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+      },
+    });
+
+  if (!existingTransaction) {
+    return null;
+  }
+
+  await prisma.transaction.delete({
+    where: {
+      id: transactionId,
+    },
+  });
+  return true
+}
+
+const updateTransactionService = async(transactionId,userId,updateData)=>{
+    const existingData = await prisma.transaction.findFirst({where:{id:transactionId,userId}});
+    if(!existingData)return null;
+    const updatedTransaction = await prisma.transaction.update({
+        where:{
+            id:transactionId,
+        },
+        data:{
+            ...updateData,
+            ...(updateData.date && {date: new Date(updateData.date)}),
+        },
+    });
+    return updatedTransaction;
+}
+
+module.exports = {createTransactionService,getTransactionService,getTransactionsService,updateTransactionService,deleteTransactionService}

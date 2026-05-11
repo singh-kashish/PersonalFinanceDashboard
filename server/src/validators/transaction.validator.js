@@ -21,4 +21,23 @@ const getTransactionsSchema = z.object({
 
 const getTransactionSchema = z.coerce.number().int().positive("Invalid transaction id");
 
-module.exports = {createTransactionSchema, getTransactionsSchema, getTransactionSchema}
+const updateTransactionSchema = z.object({
+    amount: z.coerce.number().positive().optional(),
+    type: z.enum(transactionTypes).optional(),
+    category: z.string().trim().min(1).optional(),
+    description: z.string().trim().max(300).optional(),
+    date: z.string().datetime().optional()
+}).refine((data)=>{
+    return (
+        data.amount!==undefined || 
+        data.type!==undefined ||
+        data.category!==undefined||
+        data.description!==undefined||
+        data.date!==undefined
+    )
+},{
+      message: "At least one field must be provided",
+      path: [], 
+    })
+
+module.exports = {createTransactionSchema, getTransactionsSchema, getTransactionSchema, updateTransactionSchema}
