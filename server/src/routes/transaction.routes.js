@@ -1,14 +1,42 @@
-const express = require('express')
+const express = require('express');
 
-const {postTransaction, getTransactions, getTransaction, updateTransaction, deleteTransaction} = require('../controllers/transaction.controller')
-const authMiddleware = require('../middlewares/auth.middleware')
+const {
+    postTransaction,
+    getTransaction,
+    getTransactions,
+    updateTransaction,
+    deleteTransaction,
+} = require('../controllers/transaction.controller');
+
+const authMiddleware = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.post('/transactions',authMiddleware,postTransaction);
-router.get('/transactions',authMiddleware,getTransactions);
-router.get('/transactions/:id',authMiddleware,getTransaction);
-router.patch('/transactions/:id',authMiddleware,updateTransaction);
-router.delete('/transactions/:id',authMiddleware,deleteTransaction);
+router.use(authMiddleware);
 
-module.exports = router
+router.post(
+    '/transactions',
+    postTransaction
+);
+
+router.get(
+    '/transactions',
+    getTransactions
+);
+
+router.get(
+    '/transactions/:id',
+    getTransaction
+);
+
+router.patch(
+    '/transactions/:id',
+    updateTransaction
+);
+
+router.delete(
+    '/transactions/:id',
+    deleteTransaction
+);
+
+module.exports = router;

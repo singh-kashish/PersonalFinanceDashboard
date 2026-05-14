@@ -1,16 +1,19 @@
-const express = require('express')
+const express = require('express');
+
+const healthRoutes = require('./routes/health.routes');
+const authRoutes = require('./routes/auth.routes');
+const transactionRoutes = require('./routes/transaction.routes');
+
+const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
-const healthRoutes = require('./routes/health.routes')
-const authRoutes = require('./routes/auth.routes')
-const transactionRoutes = require('./routes/transaction.routes')
 
-// Middlewares
-app.use(express.json())
+app.use(express.json());
 
-//Routes
-app.use('/',healthRoutes)
-app.use('/',authRoutes)
-app.use('/',transactionRoutes)
+app.use('/', healthRoutes);
+app.use('/', authRoutes);
+app.use('/', transactionRoutes);
+
+app.use(errorMiddleware);
 
 module.exports = app;
