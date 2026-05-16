@@ -1,9 +1,9 @@
-const z = require('zod');
+import {z} from 'zod'
 
 const transactionTypes = [
     'INCOME',
     'EXPENSE',
-];
+] as const;
 
 const createTransactionSchema = z.object({
     amount: z.coerce
@@ -90,11 +90,13 @@ const updateTransactionSchema = z.object({
         .datetime()
         .optional(),
 }).refine(
-    (data) =>
-        Object.keys(data).length > 0,
+  (data) =>
+    Object.values(data).some(
+      (value) => value !== undefined
+    ),
     {
-        message:
-            'At least one field must be provided',
+      message:
+        'At least one field must be provided',
     }
 );
 
@@ -104,3 +106,15 @@ module.exports = {
     transactionIdSchema,
     updateTransactionSchema,
 };
+
+export type CreateTransactionInput =
+  z.infer<typeof createTransactionSchema>;
+
+export type GetTransactionsInput =
+  z.infer<typeof getTransactionsSchema>;
+
+export type UpdateTransactionInput =
+  z.infer<typeof updateTransactionSchema>;
+
+export type TransactionType =
+  typeof transactionTypes[number];
