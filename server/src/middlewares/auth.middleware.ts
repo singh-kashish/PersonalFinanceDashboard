@@ -1,15 +1,24 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response }
+from "express";
+
 import jwt from "jsonwebtoken";
-//import { JwtPayload } from "../types/auth.types";
+
 import AppError from "../utils/AppError";
-import { jwtPayloadSchema } from "../validators/auth.validator"; 
+
+import {
+  jwtPayloadSchema,
+} from "../validators/auth.validator";
+
+import { env } from "../config/env";
+
 const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader =
+      req.headers.authorization;
 
     if (!authHeader) {
       throw new AppError(
@@ -18,11 +27,12 @@ const authMiddleware = (
       );
     }
 
-    const parts = authHeader.split(" ");
+    const [scheme, token] =
+      authHeader.split(" ");
 
     if (
-      parts.length !== 2 ||
-      parts[0] !== "Bearer"
+      scheme !== "Bearer" ||
+      !token
     ) {
       throw new AppError(
         "Invalid authorization header format.",
@@ -30,20 +40,22 @@ const authMiddleware = (
       );
     }
 
-    const token = parts[1];
+    const decoded = jwt.verify(
+      token,
+      env.JWT_SECRET
+    );
 
-    // const decoded = jwt.verify(
-    //   token,
-    //   process.env.JWT_SECRET as string
-    // ) as unknown as JwtPayload;
+    const validatedPayload =
+      jwtPayloadSchema.safeParse(decoded);
 
-    const decoded = jwt.verify(token,process.env.JWT_SECRET!);
-    const validatedPayload = jwtPayloadSchema.safeParse(decoded);
-    if(!validatedPayload.success){
-      throw new AppError( "Invalid token payload",
-      401)
+    if (!validatedPayload.success) {
+      throw new AppError(
+        "Invalid token payload.",
+        401
+      );
     }
-    req.user = validatedPayload.data;
+
+    req.auth = validatedPayload.data;
 
     next();
   } catch (error) {

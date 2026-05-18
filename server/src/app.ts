@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 
-const healthRoutes = require('./routes/health.routes');
-const authRoutes = require('./routes/auth.routes');
-const transactionRoutes = require('./routes/transaction.routes');
+import healthRoutes from './routes/health.routes';
+import authRoutes from './routes/auth.routes';
+// import transactionRoutes from './routes/transaction.routes';
 
-const errorMiddleware = require('./middlewares/error.middleware');
+import errorMiddleware from './middlewares/error.middleware';
 
 const app = express();
 
@@ -12,8 +12,8 @@ app.use(express.json());
 
 app.use('/', healthRoutes);
 app.use('/', authRoutes);
-app.use('/', transactionRoutes);
+// app.use('/', transactionRoutes);
 
 app.use(errorMiddleware);
 
-module.exports = app;
+export default app;

@@ -3,7 +3,7 @@ export {}; // Forces this file to become a module, TS won't treat it as script, 
 declare global{ // Express types are global namespace declaration 
     namespace Express{ // Express types are global namespace declaration 
         interface Request{
-            user?:{
+            auth?:{
                 userId:number;
                 email:string;
             }

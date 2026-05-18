@@ -37,7 +37,7 @@ const postTransaction = async (
         const transaction =
             await createTransactionService(
                 parsedBody.data,
-                req.user.userId
+                req.auth.userId
             );
 
         return res.status(201).json({
@@ -71,7 +71,7 @@ const getTransaction = async (
         const transaction =
             await getTransactionService(
                 parsedId.data,
-                req.user.userId
+                req.auth.userId
             );
 
         return res.status(200).json({
@@ -105,7 +105,7 @@ const getTransactions = async (
         const transactions =
             await getTransactionsService(
                 parsedQuery.data,
-                req.user.userId
+                req.auth.userId
             );
 
         return res.status(200).json({
@@ -152,7 +152,7 @@ const updateTransaction = async (
         const updatedTransaction =
             await updateTransactionService(
                 parsedId.data,
-                req.user.userId,
+                req.auth.userId,
                 parsedBody.data
             );
 
@@ -186,7 +186,7 @@ const deleteTransaction = async (
 
         await deleteTransactionService(
             parsedId.data,
-            req.user.userId
+            req.auth.userId
         );
 
         return res.status(200).json({

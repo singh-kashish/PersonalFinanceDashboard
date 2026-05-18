@@ -1,25 +1,35 @@
-import {z} from 'zod'
+import { z } from "zod";
 
-const signupSchema = z.object({
-    email: z.string().trim().email(),
-    name: z.string().optional(),
-    password: z.string().min(6)
-})
+export const signupSchema = z.object({
+  email: z.email().trim(),
 
-const loginSchema = z.object({
-    email:z.string().trim().email(),
-    password:z.string().min(6)
-})
+  name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .optional(),
+
+  password: z.string().min(6),
+});
+
+export const loginSchema = z.object({
+  email: z.email().trim(),
+
+  password: z.string().min(6),
+});
 
 export const jwtPayloadSchema = z.object({
-    userId: z.number().positive(),
-    email: z.string().trim().email()
-})
+  userId: z.number().positive(),
 
-export type JwtPayload = z.infer<typeof jwtPayloadSchema>
+  email: z.email().trim(),
+});
 
-export type signUpInput =
+export type JwtPayload =
+  z.infer<typeof jwtPayloadSchema>;
+
+export type SignUpInput =
   z.infer<typeof signupSchema>;
-export type loginInput = z.infer<typeof loginSchema>
 
-export {signupSchema,loginSchema};
+export type LoginInput =
+  z.infer<typeof loginSchema>;
