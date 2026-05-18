@@ -1,174 +1,203 @@
-const prisma = require('../lib/prisma');
+import prisma from '../lib/prisma';
 
-const AppError = require('../utils/AppError');
+import AppError from '../utils/AppError';
+
+import {
+  CreateTransactionInput,
+  GetTransactionsInput,
+  UpdateTransactionInput,
+} from '../validators/transaction.validator';
 
 const createTransactionService = async (
-    transactionData,
-    userId
+  transactionData: CreateTransactionInput,
+  userId: number
 ) => {
-    return prisma.transaction.create({
-        data: {
-            ...transactionData,
+  return prisma.transaction.create({
+    data: {
+      amount: transactionData.amount,
 
-            userId,
+      type: transactionData.type,
 
-            date: transactionData.date
-                ? new Date(transactionData.date)
-                : new Date(),
-        },
-    });
+      category: transactionData.category,
+
+      description:
+        transactionData.description ?? null,
+
+      userId,
+
+      date: transactionData.date
+        ? new Date(transactionData.date)
+        : new Date(),
+    },
+  });
 };
 
 const getTransactionService = async (
-    transactionId,
-    userId
+  transactionId: number,
+  userId: number
 ) => {
-    const transaction =
-        await prisma.transaction.findFirst({
-            where: {
-                id: transactionId,
-                userId,
-            },
-        });
+  const transaction =
+    await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+      },
+    });
 
-    if (!transaction) {
-        throw new AppError(
-            'Transaction not found.',
-            404
-        );
-    }
+  if (!transaction) {
+    throw new AppError(
+      'Transaction not found.',
+      404
+    );
+  }
 
-    return transaction;
+  return transaction;
 };
 
 const getTransactionsService = async (
-    parameters,
-    userId
+  parameters: GetTransactionsInput,
+  userId: number
 ) => {
-    const {
-        page,
-        limit,
-        category,
-        sortBy,
-        order,
-        type,
-    } = parameters;
+  const {
+    page,
+    limit,
+    category,
+    sortBy,
+    order,
+    type,
+  } = parameters;
 
-    const where = {
-        userId,
-    };
+  const where: {
+    userId: number;
+    category?: string;
+    type?: 'INCOME' | 'EXPENSE';
+  } = {
+    userId,
+  };
 
-    if (category) {
-        where.category = category;
-    }
+  if (category) {
+    where.category = category;
+  }
 
-    if (type) {
-        where.type = type;
-    }
+  if (type) {
+    where.type = type;
+  }
 
-    const skip = (page - 1) * limit;
+  const skip = (page - 1) * limit;
 
-    const [transactions, total] =
-        await Promise.all([
-            prisma.transaction.findMany({
-                where,
+  const [transactions, total] =
+    await Promise.all([
+      prisma.transaction.findMany({
+        where,
 
-                orderBy: {
-                    [sortBy]: order,
-                },
-
-                skip,
-
-                take: limit,
-            }),
-
-            prisma.transaction.count({
-                where,
-            }),
-        ]);
-
-    return {
-        transactions,
-
-        pagination: {
-            total,
-            page,
-            limit,
-
-            pages: Math.ceil(
-                total / limit
-            ),
+        orderBy: {
+          [sortBy]: order,
         },
-    };
+
+        skip,
+
+        take: limit,
+      }),
+
+      prisma.transaction.count({
+        where,
+      }),
+    ]);
+
+  return {
+    transactions,
+
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
+  };
 };
 
 const updateTransactionService = async (
-    transactionId,
-    userId,
-    updateData
+  transactionId: number,
+  userId: number,
+  updateData: UpdateTransactionInput
 ) => {
-    const existingTransaction =
-        await prisma.transaction.findFirst({
-            where: {
-                id: transactionId,
-                userId,
-            },
-        });
-
-    if (!existingTransaction) {
-        throw new AppError(
-            'Transaction not found.',
-            404
-        );
-    }
-
-    return prisma.transaction.update({
-        where: {
-            id: transactionId,
-        },
-
-        data: {
-            ...updateData,
-
-            ...(updateData.date && {
-                date: new Date(updateData.date),
-            }),
-        },
+  const existingTransaction =
+    await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+      },
     });
+
+  if (!existingTransaction) {
+    throw new AppError(
+      'Transaction not found.',
+      404
+    );
+  }
+
+  return prisma.transaction.update({
+    where: {
+      id: transactionId,
+    },
+
+    data: {
+      ...(updateData.amount !== undefined && {
+        amount: updateData.amount,
+      }),
+
+      ...(updateData.type !== undefined && {
+        type: updateData.type,
+      }),
+
+      ...(updateData.category !== undefined && {
+        category: updateData.category,
+      }),
+
+      ...(updateData.description !== undefined && {
+        description:
+          updateData.description,
+      }),
+
+      ...(updateData.date !== undefined && {
+        date: new Date(updateData.date),
+      }),
+    },
+  });
 };
 
 const deleteTransactionService = async (
-    transactionId,
-    userId
+  transactionId: number,
+  userId: number
 ) => {
-    const existingTransaction =
-        await prisma.transaction.findFirst({
-            where: {
-                id: transactionId,
-                userId,
-            },
-        });
-
-    if (!existingTransaction) {
-        throw new AppError(
-            'Transaction not found.',
-            404
-        );
-    }
-
-    await prisma.transaction.delete({
-        where: {
-            id: transactionId,
-        },
+  const existingTransaction =
+    await prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+      },
     });
 
-    return true;
+  if (!existingTransaction) {
+    throw new AppError(
+      'Transaction not found.',
+      404
+    );
+  }
+
+  await prisma.transaction.delete({
+    where: {
+      id: transactionId,
+    },
+  });
+
+  return true;
 };
 
-module.exports = {
-    createTransactionService,
-    getTransactionService,
-    getTransactionsService,
-    updateTransactionService,
-    deleteTransactionService,
+export {
+  createTransactionService,
+  getTransactionService,
+  getTransactionsService,
+  updateTransactionService,
+  deleteTransactionService,
 };

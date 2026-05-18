@@ -1,14 +1,14 @@
 export {}; // Forces this file to become a module, TS won't treat it as script, global augmentation won't fail
 
-declare global{ // Express types are global namespace declaration 
-    namespace Express{ // Express types are global namespace declaration 
-        interface Request{
-            auth?:{
-                userId:number;
-                email:string;
-            }
-        }
+declare global {
+  namespace Express {
+    interface Request {
+      auth: {
+        userId: number;
+        email: string;
+      };
     }
+  }
 }
 
 // Typescript Type Augmentation, not runtime JS. Extending existing Express's Request interface 

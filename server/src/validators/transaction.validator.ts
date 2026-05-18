@@ -100,8 +100,7 @@ const updateTransactionSchema = z.object({
     }
 );
 
-module.exports = {
-    createTransactionSchema,
+export{ createTransactionSchema,
     getTransactionsSchema,
     transactionIdSchema,
     updateTransactionSchema,
