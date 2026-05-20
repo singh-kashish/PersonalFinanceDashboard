@@ -3,6 +3,7 @@ import express from 'express';
 import healthRoutes from './routes/health.routes';
 import authRoutes from './routes/auth.routes';
 import transactionRoutes from './routes/transaction.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 import errorMiddleware from './middlewares/error.middleware';
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use('/', healthRoutes);
 app.use('/', authRoutes);
 app.use('/', transactionRoutes);
+app.use('/',analyticsRoutes);
 
 app.use(errorMiddleware);
 
