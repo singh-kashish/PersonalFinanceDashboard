@@ -42,7 +42,7 @@ export const monthlyController = async(req:Request,res:Response,next:NextFunctio
         if(!parsedParams.success){
             throw new AppError(parsedParams.error.issues[0]?.message??'Issue with params',400)
         }
-        let result = await montlyService(parsedParams.data,req.auth.userId);
+        let result = await monthlyService(parsedParams.data,req.auth.userId);
         return res.status(200).json({
             success: true,
             data: result,

@@ -1,7 +1,7 @@
 import { Decimal } from '@prisma/client/runtime/library';
 
 export const toNumber = (
-  value: Decimal | 0
+  value: Decimal | null
 ): number => {
   return value
     ? value.toNumber()
