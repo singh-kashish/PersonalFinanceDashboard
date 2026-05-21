@@ -1,14 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 
 import {
-  signupSchema,
-  loginSchema,
-} from '../validators/auth.validator';
-
-import {
   signupService,
   loginService,
 } from '../services/auth.service';
+import {
+  SignUpInput,
+  LoginInput,
+} from '../validators/auth.validator';
 
 import AppError from '../utils/AppError';
 
@@ -18,21 +17,21 @@ const signupController = async (
   next: NextFunction
 ) => {
   try {
-    const validatedData =
-      signupSchema.safeParse(req.body);
+    // const validatedData =
+    //   signupSchema.safeParse(req.body);
 
-    if (!validatedData.success) {
-      throw new AppError(
-        validatedData.error.issues[0]?.message ||
-          'Validation error',
-        400
-      );
-    }
+    // if (!validatedData.success) {
+    //   throw new AppError(
+    //     validatedData.error.issues[0]?.message ||
+    //       'Validation error',
+    //     400
+    //   );
+    // }
 
-    const result = await signupService(
-      validatedData.data
-    );
-
+    // const result = await signupService(
+    //   validatedData.data
+    // );
+    const result = await signupService(req.validated?.body as SignUpInput)
     return res.status(201).json({
       success: true,
       data: result,
@@ -48,20 +47,21 @@ const loginController = async (
   next: NextFunction
 ) => {
   try {
-    const parsedBody =
-      loginSchema.safeParse(req.body);
+    // const parsedBody =
+    //   loginSchema.safeParse(req.body);
 
-    if (!parsedBody.success) {
-      throw new AppError(
-        parsedBody.error.issues[0]?.message ||
-          'Validation error',
-        400
-      );
-    }
+    // if (!parsedBody.success) {
+    //   throw new AppError(
+    //     parsedBody.error.issues[0]?.message ||
+    //       'Validation error',
+    //     400
+    //   );
+    // }
 
-    const result = await loginService(
-      parsedBody.data
-    );
+    // const result = await loginService(
+    //   parsedBody.data
+    // );
+    const result = await loginService(req.validated?.body as LoginInput);
 
     return res.status(200).json({
       success: true,

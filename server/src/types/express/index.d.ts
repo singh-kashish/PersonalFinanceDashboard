@@ -7,6 +7,11 @@ declare global {
         userId: number;
         email: string;
       };
+      validated?:{
+        body?:unknown;
+        query?:unknown;
+        params?:unknown;
+      };
     }
   }
 }
