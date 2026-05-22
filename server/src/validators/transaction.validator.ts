@@ -26,41 +26,113 @@ const createTransactionSchema = z.object({
         .optional(),
 });
 
-const getTransactionsSchema = z.object({
+export const paginationSchema =
+  z.object({
     page: z.coerce
-        .number()
-        .int()
-        .positive()
-        .default(1),
+      .number()
+      .int()
+      .positive()
+      .default(1),
 
     limit: z.coerce
-        .number()
-        .int()
-        .positive()
-        .max(100)
-        .default(10),
+      .number()
+      .int()
+      .positive()
+      .max(100)
+      .default(10),
+});
 
-    category: z.string()
-        .trim()
-        .optional(),
-
+export const sortingSchema =
+  z.object({
     sortBy: z.enum([
-        'amount',
-        'category',
-        'type',
-        'date',
-        'createdAt',
-        'updatedAt',
-    ]).default('createdAt'),
+      'amount',
+      'category',
+      'date',
+      'createdAt',
+      'updatedAt',
+    ])
+    .default('createdAt'),
 
     order: z.enum([
-        'asc',
-        'desc',
-    ]).default('desc'),
-
-    type: z.enum(transactionTypes)
-        .optional(),
+      'asc',
+      'desc',
+    ])
+    .default('desc'),
 });
+
+export const transactionsFilterSchema =
+  z.object({
+    type: z.enum([
+      'INCOME',
+      'EXPENSE',
+    ])
+    .optional(),
+
+    category: z.string()
+      .trim()
+      .optional(),
+
+    search: z.string()
+      .trim()
+      .optional(),
+
+    minAmount: z.coerce
+      .number()
+      .positive()
+      .optional(),
+
+    maxAmount: z.coerce
+      .number()
+      .positive()
+      .optional(),
+
+    from: z.iso
+      .datetime()
+      .optional(),
+
+    to: z.iso
+      .datetime()
+      .optional(),
+});
+export const getTransactionsSchema =
+  paginationSchema
+    .safeExtend(sortingSchema.shape)
+    .safeExtend(transactionsFilterSchema.shape);
+// const getTransactionsSchema = z.object({
+//     page: z.coerce
+//         .number()
+//         .int()
+//         .positive()
+//         .default(1),
+
+//     limit: z.coerce
+//         .number()
+//         .int()
+//         .positive()
+//         .max(100)
+//         .default(10),
+
+//     category: z.string()
+//         .trim()
+//         .optional(),
+
+//     sortBy: z.enum([
+//         'amount',
+//         'category',
+//         'type',
+//         'date',
+//         'createdAt',
+//         'updatedAt',
+//     ]).default('createdAt'),
+
+//     order: z.enum([
+//         'asc',
+//         'desc',
+//     ]).default('desc'),
+
+//     type: z.enum(transactionTypes)
+//         .optional(),
+// });
 
 const transactionIdSchema = z.coerce
     .number()
@@ -101,7 +173,6 @@ const updateTransactionSchema = z.object({
 );
 
 export{ createTransactionSchema,
-    getTransactionsSchema,
     transactionIdSchema,
     updateTransactionSchema,
 };

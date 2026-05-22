@@ -1,12 +1,14 @@
 import prisma from '../lib/prisma';
 
 import AppError from '../utils/AppError';
+import { Prisma } from '../generated/prisma';
 
 import {
   CreateTransactionInput,
   GetTransactionsInput,
   UpdateTransactionInput,
 } from '../validators/transaction.validator';
+import { paginate } from '../utils/pagination';
 
 const createTransactionService = async (
   transactionData: CreateTransactionInput,
@@ -54,7 +56,7 @@ const getTransactionService = async (
   return transaction;
 };
 
-const getTransactionsService = async (
+export const getTransactionsService = async (
   parameters: GetTransactionsInput,
   userId: number
 ) => {
@@ -65,25 +67,69 @@ const getTransactionsService = async (
     sortBy,
     order,
     type,
+    search,
+    minAmount,
+    maxAmount,
+    from,
+    to,
   } = parameters;
 
-  const where: {
-    userId: number;
-    category?: string;
-    type?: 'INCOME' | 'EXPENSE';
-  } = {
-    userId,
-  };
+  const where: Prisma.TransactionWhereInput =
+    {
+      userId,
 
-  if (category) {
-    where.category = category;
+      ...(category && { category }),
+
+      ...(type && { type }),
+
+      ...((minAmount !== undefined ||
+        maxAmount !== undefined) && {
+        amount: {
+          ...(minAmount !== undefined && {
+            gte: minAmount,
+          }),
+
+          ...(maxAmount !== undefined && {
+            lte: maxAmount,
+          }),
+        },
+      }),
+
+      ...((from || to) && {
+        date: {
+          ...(from && {
+            gte: new Date(from),
+          }),
+
+          ...(to && {
+            lte: new Date(to),
+          }),
+        },
+      }),
+    };
+
+  if (search) {
+    where.OR = [
+      {
+        category: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+
+      {
+        description: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+    ];
   }
 
-  if (type) {
-    where.type = type;
-  }
-
-  const skip = (page - 1) * limit;
+  const { skip, take } = paginate(
+    page,
+    limit
+  );
 
   const [transactions, total] =
     await Promise.all([
@@ -96,7 +142,7 @@ const getTransactionsService = async (
 
         skip,
 
-        take: limit,
+        take,
       }),
 
       prisma.transaction.count({
@@ -115,6 +161,7 @@ const getTransactionsService = async (
     },
   };
 };
+
 
 const updateTransactionService = async (
   transactionId: number,
@@ -197,7 +244,6 @@ const deleteTransactionService = async (
 export {
   createTransactionService,
   getTransactionService,
-  getTransactionsService,
   updateTransactionService,
   deleteTransactionService,
 };

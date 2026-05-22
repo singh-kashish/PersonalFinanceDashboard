@@ -1,12 +1,7 @@
-type PaginationParams = {
-  page: number;
-  limit: number;
-};
-
-export const getPagination = ({
-  page,
-  limit,
-}: PaginationParams) => {
+export const paginate = (
+  page: number,
+  limit: number
+) => {
   const skip = (page - 1) * limit;
 
   return {
