@@ -4,12 +4,7 @@ import {
   NextFunction,
 } from 'express';
 
-import {
-  createTransactionSchema,
-  getTransactionsSchema,
-  transactionIdSchema,
-  updateTransactionSchema,
-} from '../validators/transaction.validator';
+import {CreateTransactionInput, GetTransactionsInput,UpdateTransactionInput,TransactionType,TransactionIdType} from '../validators/transaction.validator'
 
 import {
   createTransactionService,
@@ -20,6 +15,7 @@ import {
 } from '../services/transaction.service';
 
 import AppError from '../utils/AppError';
+import { sendSuccess } from '../utils/sendSuccess';
 
 const postTransaction = async (
   req: Request,
@@ -27,29 +23,12 @@ const postTransaction = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const parsedBody =
-      createTransactionSchema.safeParse(
-        req.body
-      );
-
-    if (!parsedBody.success) {
-      throw new AppError(
-        parsedBody.error.issues[0]?.message ??
-          'Invalid request body',
-        400
-      );
-    }
-
     const transaction =
       await createTransactionService(
-        parsedBody.data,
+        req.validated?.body as CreateTransactionInput,
         req.auth.userId
       );
-
-    res.status(201).json({
-      success: true,
-      data: transaction,
-    });
+    sendSuccess(res,201,transaction,'Transaction added')
   } catch (error) {
     next(error);
   }
@@ -61,29 +40,13 @@ const getTransaction = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const parsedId =
-      transactionIdSchema.safeParse(
-        req.params.id
-      );
-
-    if (!parsedId.success) {
-      throw new AppError(
-        parsedId.error.issues[0]?.message ??
-          'Invalid transaction id',
-        400
-      );
-    }
 
     const transaction =
       await getTransactionService(
-        parsedId.data,
+        req.validated?.params as TransactionIdType,
         req.auth.userId
       );
-
-    res.status(200).json({
-      success: true,
-      data: transaction,
-    });
+    sendSuccess(res,200,transaction)
   } catch (error) {
     next(error);
   }
@@ -95,29 +58,12 @@ const getTransactions = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const parsedQuery =
-      getTransactionsSchema.safeParse(
-        req.query
-      );
-
-    if (!parsedQuery.success) {
-      throw new AppError(
-        parsedQuery.error.issues[0]?.message ??
-          'Invalid query params',
-        400
-      );
-    }
-
     const transactions =
       await getTransactionsService(
-        parsedQuery.data,
+        req.validated?.query as GetTransactionsInput,
         req.auth.userId
       );
-
-    res.status(200).json({
-      success: true,
-      data: transactions,
-    });
+    sendSuccess(res,200,transactions);
   } catch (error) {
     next(error);
   }
@@ -129,43 +75,14 @@ const updateTransaction = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const parsedId =
-      transactionIdSchema.safeParse(
-        req.params.id
-      );
-
-    if (!parsedId.success) {
-      throw new AppError(
-        parsedId.error.issues[0]?.message ??
-          'Invalid transaction id',
-        400
-      );
-    }
-
-    const parsedBody =
-      updateTransactionSchema.safeParse(
-        req.body
-      );
-
-    if (!parsedBody.success) {
-      throw new AppError(
-        parsedBody.error.issues[0]?.message ??
-          'Invalid update data',
-        400
-      );
-    }
-
     const updatedTransaction =
       await updateTransactionService(
-        parsedId.data,
+        req.validated?.params as TransactionIdType,
         req.auth.userId,
-        parsedBody.data
+        req.validated?.body as UpdateTransactionInput
       );
 
-    res.status(200).json({
-      success: true,
-      data: updatedTransaction,
-    });
+    sendSuccess(res,200,updateTransaction)
   } catch (error) {
     next(error);
   }
@@ -177,29 +94,11 @@ const deleteTransaction = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const parsedId =
-      transactionIdSchema.safeParse(
-        req.params.id
-      );
-
-    if (!parsedId.success) {
-      throw new AppError(
-        parsedId.error.issues[0]?.message ??
-          'Invalid transaction id',
-        400
-      );
-    }
-
     await deleteTransactionService(
-      parsedId.data,
+      req.validated?.params as TransactionIdType,
       req.auth.userId
     );
-
-    res.status(200).json({
-      success: true,
-      message:
-        'Transaction deleted successfully',
-    });
+    sendSuccess(res,200,'Deleted','Deleted');
   } catch (error) {
     next(error);
   }

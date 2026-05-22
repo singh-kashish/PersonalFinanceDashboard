@@ -10,12 +10,13 @@ import {
 } from '../validators/auth.validator';
 
 import AppError from '../utils/AppError';
+import { sendSuccess } from '../utils/sendSuccess';
 
 const signupController = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+):Promise<void> => {
   try {
     // const validatedData =
     //   signupSchema.safeParse(req.body);
@@ -32,10 +33,7 @@ const signupController = async (
     //   validatedData.data
     // );
     const result = await signupService(req.validated?.body as SignUpInput)
-    return res.status(201).json({
-      success: true,
-      data: result,
-    });
+    sendSuccess(res,200,result,'Signup successful!')
   } catch (error) {
     next(error);
   }
@@ -45,7 +43,7 @@ const loginController = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+):Promise<void> => {
   try {
     // const parsedBody =
     //   loginSchema.safeParse(req.body);
@@ -62,11 +60,7 @@ const loginController = async (
     //   parsedBody.data
     // );
     const result = await loginService(req.validated?.body as LoginInput);
-
-    return res.status(200).json({
-      success: true,
-      data: result,
-    });
+    sendSuccess(res,200,result,'Login Successful')
   } catch (error) {
     next(error);
   }
@@ -76,12 +70,9 @@ const currentUserController = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+):Promise<void> => {
   try {
-    return res.status(200).json({
-      success: true,
-      data: req.auth,
-    });
+    sendSuccess(res,200,req.auth,'User details')
   } catch (error) {
     next(error);
   }

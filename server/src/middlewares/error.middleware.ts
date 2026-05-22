@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/AppError";
 
-const errorMiddleware = (err:unknown, req:Request, res:Response, next:NextFunction) => {
+const errorMiddleware = (err:unknown, _req:Request, res:Response, _next:NextFunction):void => {
     console.error(err);
     let statusCode = 500;
     let message = "Internal Server Error"
@@ -10,7 +10,7 @@ const errorMiddleware = (err:unknown, req:Request, res:Response, next:NextFuncti
         message = err.message;
     }
 
-    return res.status(statusCode).json({
+    res.status(statusCode).json({
         success: false,
         message,
     });

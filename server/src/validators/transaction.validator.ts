@@ -117,3 +117,5 @@ export type UpdateTransactionInput =
 
 export type TransactionType =
   typeof transactionTypes[number];
+
+  export type TransactionIdType = z.infer<typeof transactionIdSchema>;

@@ -1,52 +1,31 @@
 import { Request, Response,NextFunction } from "express"
-import { analyticsQuerySchema } from "../validators/analytics.validator"
+import { AnalyticsQueryInput } from "../validators/analytics.validator";
 import AppError from "../utils/AppError";
 import { summaryService,categoryService, monthlyService } from "../services/analytics.service";
+import { sendSuccess } from "../utils/sendSuccess";
 //Summary
-export const summaryController = async (req:Request,res:Response,next:NextFunction) =>{
+export const summaryController = async (req:Request,res:Response,next:NextFunction):Promise<void> =>{
     try{
-        let parsedParams = analyticsQuerySchema.safeParse(req.query);
-        if(!parsedParams.success){
-            throw new AppError(parsedParams.error.issues[0]?.message??'Issue with params',400)
-        }
-        let result = await summaryService(parsedParams.data,req.auth.userId);
-        return res.status(200).json({
-            success: true,
-            data: result,
-        });
-
+        let result = await summaryService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
+        sendSuccess(res,200,result,'Received Summary');
     } catch(error){
         next(error)
     }
 }
 //Category
-export const categoryController = async (req:Request,res:Response,next:NextFunction) =>{
+export const categoryController = async (req:Request,res:Response,next:NextFunction):Promise<void> =>{
     try{
-        let parsedParams = analyticsQuerySchema.safeParse(req.query);
-        if(!parsedParams.success){
-            throw new AppError(parsedParams.error.issues[0]?.message??'Issue with params',400)
-        }
-        let result = await categoryService(parsedParams.data,req.auth.userId);
-        return res.status(200).json({
-            success: true,
-            data: result,
-        });
+        let result = await categoryService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
+        sendSuccess(res,200,result,'Received Category data')
     } catch(error){
         next(error)
     }
 }
 //Monthly
-export const monthlyController = async(req:Request,res:Response,next:NextFunction)=>{
+export const monthlyController = async(req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
-        let parsedParams = analyticsQuerySchema.safeParse(req.query);
-        if(!parsedParams.success){
-            throw new AppError(parsedParams.error.issues[0]?.message??'Issue with params',400)
-        }
-        let result = await monthlyService(parsedParams.data,req.auth.userId);
-        return res.status(200).json({
-            success: true,
-            data: result,
-        });
+        let result = await monthlyService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
+        sendSuccess(res,200,result,'Received Monthly statistics')
     } catch(error){
         next(error)
     }
