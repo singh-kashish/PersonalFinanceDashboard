@@ -11,13 +11,10 @@ import {
 
 import AppError from '../utils/AppError';
 import { sendSuccess } from '../utils/sendSuccess';
+import { asyncHandler } from '../utils/asyncHandler';
 
-const signupController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-):Promise<void> => {
-  try {
+const signupController = asyncHandler(async (
+  req,res) => {
     // const validatedData =
     //   signupSchema.safeParse(req.body);
 
@@ -34,49 +31,22 @@ const signupController = async (
     // );
     const result = await signupService(req.validated?.body as SignUpInput)
     sendSuccess(res,200,result,'Signup successful!')
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-const loginController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-):Promise<void> => {
-  try {
-    // const parsedBody =
-    //   loginSchema.safeParse(req.body);
-
-    // if (!parsedBody.success) {
-    //   throw new AppError(
-    //     parsedBody.error.issues[0]?.message ||
-    //       'Validation error',
-    //     400
-    //   );
-    // }
-
-    // const result = await loginService(
-    //   parsedBody.data
-    // );
+const loginController = asyncHandler(async (
+  req,
+  res,
+) => {
     const result = await loginService(req.validated?.body as LoginInput);
     sendSuccess(res,200,result,'Login Successful')
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-const currentUserController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-):Promise<void> => {
-  try {
+const currentUserController = asyncHandler(async (
+  req,
+  res
+  )=> {
     sendSuccess(res,200,req.auth,'User details')
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
 export {
   signupController,

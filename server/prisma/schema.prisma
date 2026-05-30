@@ -9,15 +9,15 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  name         String?
-  password     String
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String?
+  password String
 
   transactions Transaction[]
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum TransactionType {
@@ -26,19 +26,25 @@ enum TransactionType {
 }
 
 model Transaction {
-  id          Int             @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  amount      Decimal
-  type        TransactionType
+  amount Decimal
+  type   TransactionType
 
   category    String
   description String?
 
-  date        DateTime        @default(now())
+  date DateTime @default(now())
 
-  userId      Int
-  user        User            @relation(fields: [userId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([category])
+  @@index([userId, category])
 }

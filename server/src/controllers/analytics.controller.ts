@@ -3,30 +3,19 @@ import { AnalyticsQueryInput } from "../validators/analytics.validator";
 import AppError from "../utils/AppError";
 import { summaryService,categoryService, monthlyService } from "../services/analytics.service";
 import { sendSuccess } from "../utils/sendSuccess";
+import { asyncHandler } from "../utils/asyncHandler";
 //Summary
-export const summaryController = async (req:Request,res:Response,next:NextFunction):Promise<void> =>{
-    try{
+export const summaryController = asyncHandler(async (req,res) =>{
         let result = await summaryService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
         sendSuccess(res,200,result,'Received Summary');
-    } catch(error){
-        next(error)
-    }
-}
+})
 //Category
-export const categoryController = async (req:Request,res:Response,next:NextFunction):Promise<void> =>{
-    try{
+export const categoryController = asyncHandler(async (req,res) =>{
         let result = await categoryService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
         sendSuccess(res,200,result,'Received Category data')
-    } catch(error){
-        next(error)
-    }
-}
+});
 //Monthly
-export const monthlyController = async(req:Request,res:Response,next:NextFunction):Promise<void>=>{
-    try{
+export const monthlyController = asyncHandler(async(req,res)=>{
         let result = await monthlyService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
         sendSuccess(res,200,result,'Received Monthly statistics')
-    } catch(error){
-        next(error)
-    }
-}
+})

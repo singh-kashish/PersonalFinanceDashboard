@@ -134,10 +134,9 @@ export const getTransactionsSchema =
 //         .optional(),
 // });
 
-const transactionIdSchema = z.coerce
-    .number()
-    .int()
-    .positive('Invalid transaction id');
+const transactionIdSchema = z.object({
+  id: z.coerce.number().int().positive("Invalid transaction id"),
+});
 
 const updateTransactionSchema = z.object({
     amount: z.coerce

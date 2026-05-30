@@ -1,11 +1,7 @@
-import { NextFunction, Request, Response } from "express"
+import { asyncHandler } from "../utils/asyncHandler"
 
-const healthController = async (req:Request,res:Response,next:NextFunction):Promise<void> => {
-        try{
-                res.status(200).json({status:"ok"})
-        } catch(err:unknown){
-                next(err)
-        }
-}
+const healthController = asyncHandler(async(req,res) => {
+        res.status(200).json({status:"ok"})
+})
 
 export default healthController

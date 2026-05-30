@@ -16,93 +16,68 @@ import {
 
 import AppError from '../utils/AppError';
 import { sendSuccess } from '../utils/sendSuccess';
+import { asyncHandler } from '../utils/asyncHandler';
 
-const postTransaction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+const postTransaction = asyncHandler(async (
+  req,res)=> {
     const transaction =
       await createTransactionService(
         req.validated?.body as CreateTransactionInput,
         req.auth.userId
       );
     sendSuccess(res,201,transaction,'Transaction added')
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-const getTransaction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-
+const getTransaction = asyncHandler(async(req,res)=>{
+  const {id} = req.validated?.params as TransactionIdType;
     const transaction =
       await getTransactionService(
-        req.validated?.params as TransactionIdType,
+        id ,
         req.auth.userId
       );
     sendSuccess(res,200,transaction)
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-const getTransactions = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const transactions =
+const getTransactions =
+asyncHandler(async(req,res)=>{
+
+    const result =
       await getTransactionsService(
         req.validated?.query as GetTransactionsInput,
         req.auth.userId
       );
-    sendSuccess(res,200,transactions);
-  } catch (error) {
-    next(error);
-  }
-};
 
-const updateTransaction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const updatedTransaction =
+    sendSuccess(
+      res,
+      200,
+      result
+    );
+
+});
+
+const updateTransaction = asyncHandler(
+  async(req,
+  res) => {
+      const {id} = req.validated?.params as TransactionIdType
+      const updatedTransaction =
       await updateTransactionService(
-        req.validated?.params as TransactionIdType,
+        id,
         req.auth.userId,
         req.validated?.body as UpdateTransactionInput
       );
-
     sendSuccess(res,200,updateTransaction)
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-const deleteTransaction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+const deleteTransaction = asyncHandler(async (
+  req,res
+)=> {
+    const {id} =  req.validated?.params as TransactionIdType;
     await deleteTransactionService(
-      req.validated?.params as TransactionIdType,
+       id,
       req.auth.userId
     );
     sendSuccess(res,200,'Deleted','Deleted');
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
 export {
   postTransaction,

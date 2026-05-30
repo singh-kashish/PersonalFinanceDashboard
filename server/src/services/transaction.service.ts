@@ -9,6 +9,8 @@ import {
   UpdateTransactionInput,
 } from '../validators/transaction.validator';
 import { paginate } from '../utils/pagination';
+import { buildTransactionWhere } from '../utils/buildTransactionWhere';
+import { buildTransactionOrder } from '../utils/buildTransactionOrder';
 
 const createTransactionService = async (
   transactionData: CreateTransactionInput,
@@ -57,91 +59,39 @@ const getTransactionService = async (
 };
 
 export const getTransactionsService = async (
-  parameters: GetTransactionsInput,
-  userId: number
+  parameters:GetTransactionsInput,
+  userId:number
 ) => {
+
   const {
     page,
     limit,
-    category,
     sortBy,
     order,
-    type,
-    search,
-    minAmount,
-    maxAmount,
-    from,
-    to,
   } = parameters;
 
-  const where: Prisma.TransactionWhereInput =
-    {
-      userId,
+  const where =
+    buildTransactionWhere(
+      parameters,
+      userId
+    );
 
-      ...(category && { category }),
+  const orderBy =
+    buildTransactionOrder({
+      sortBy,
+      order,
+    });
 
-      ...(type && { type }),
+  const {skip,take} =
+    paginate(page,limit);
 
-      ...((minAmount !== undefined ||
-        maxAmount !== undefined) && {
-        amount: {
-          ...(minAmount !== undefined && {
-            gte: minAmount,
-          }),
-
-          ...(maxAmount !== undefined && {
-            lte: maxAmount,
-          }),
-        },
-      }),
-
-      ...((from || to) && {
-        date: {
-          ...(from && {
-            gte: new Date(from),
-          }),
-
-          ...(to && {
-            lte: new Date(to),
-          }),
-        },
-      }),
-    };
-
-  if (search) {
-    where.OR = [
-      {
-        category: {
-          contains: search,
-          mode: 'insensitive',
-        },
-      },
-
-      {
-        description: {
-          contains: search,
-          mode: 'insensitive',
-        },
-      },
-    ];
-  }
-
-  const { skip, take } = paginate(
-    page,
-    limit
-  );
-
-  const [transactions, total] =
+  const [transactions,total] =
     await Promise.all([
+
       prisma.transaction.findMany({
         where,
-
-        orderBy: {
-          [sortBy]: order,
-        },
-
+        orderBy,
         skip,
-
         take,
       }),
 
@@ -153,11 +103,13 @@ export const getTransactionsService = async (
   return {
     transactions,
 
-    pagination: {
+    pagination:{
       total,
       page,
       limit,
-      pages: Math.ceil(total / limit),
+      pages:Math.ceil(
+        total/limit
+      ),
     },
   };
 };
