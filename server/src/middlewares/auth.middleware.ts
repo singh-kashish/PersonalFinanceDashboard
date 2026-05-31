@@ -1,72 +1,75 @@
-import { NextFunction, Request, Response }
-from "express";
-
-import jwt from "jsonwebtoken";
-
-import AppError from "../utils/AppError";
+// middlewares/auth.middleware.ts
 
 import {
-  jwtPayloadSchema,
-} from "../validators/auth.validator";
+  Request,
+  Response,
+  NextFunction
+} from 'express';
 
-import { env } from "../config/env";
+import AppError from '../utils/AppError';
+
+import {
+  jwtPayloadSchema
+} from '../validators/auth.validator';
+
+import {
+  verifyAccessToken
+} from '../utils/jwt';
 
 const authMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+  req:Request,
+  _res:Response,
+  next:NextFunction
+)=>{
+  try{
+
     const authHeader =
       req.headers.authorization;
 
-    if (!authHeader) {
+    if(!authHeader){
       throw new AppError(
-        "Access denied. No token provided.",
+        'No token provided',
         401
       );
     }
 
-    const [scheme, token] =
-      authHeader.split(" ");
+    const [scheme,token] =
+      authHeader.split(' ');
 
-    if (
-      scheme !== "Bearer" ||
+    if(
+      scheme !== 'Bearer' ||
       !token
-    ) {
+    ){
       throw new AppError(
-        "Invalid authorization header format.",
+        'Invalid authorization header',
         401
       );
     }
 
-    const decoded = jwt.verify(
-      token,
-      env.JWT_SECRET
-    );
-
-    const validatedPayload =
-      jwtPayloadSchema.safeParse(decoded);
-
-    if (!validatedPayload.success) {
-      throw new AppError(
-        "Invalid token payload.",
-        401
+    const decoded =
+      verifyAccessToken(
+        token
       );
-    }
 
-    req.auth = validatedPayload.data;
+    const validated =
+      jwtPayloadSchema.parse(
+        decoded
+      );
+
+    req.auth =
+      validated;
 
     next();
-  } catch (error) {
+
+  }catch{
+
     next(
-      error instanceof AppError
-        ? error
-        : new AppError(
-            "Invalid or expired token.",
-            401
-          )
+      new AppError(
+        'Invalid or expired token',
+        401
+      )
     );
+
   }
 };
 

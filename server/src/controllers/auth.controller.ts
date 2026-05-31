@@ -12,33 +12,90 @@ import {
 import AppError from '../utils/AppError';
 import { sendSuccess } from '../utils/sendSuccess';
 import { asyncHandler } from '../utils/asyncHandler';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 
 const signupController = asyncHandler(async (
   req,res) => {
-    // const validatedData =
-    //   signupSchema.safeParse(req.body);
+ const user =
+ await signupService(
+   req.validated?.body as SignUpInput
+ );
 
-    // if (!validatedData.success) {
-    //   throw new AppError(
-    //     validatedData.error.issues[0]?.message ||
-    //       'Validation error',
-    //     400
-    //   );
-    // }
+const accessToken =
+ generateAccessToken({
+    userId:user.id,
+    email:user.email
+ });
 
-    // const result = await signupService(
-    //   validatedData.data
-    // );
-    const result = await signupService(req.validated?.body as SignUpInput)
-    sendSuccess(res,200,result,'Signup successful!')
+const refreshToken =
+ generateRefreshToken({
+    userId:user.id,
+    email:user.email
+ });
+
+res.cookie(
+  'refreshToken',
+  refreshToken,
+  {
+    httpOnly:true,
+    secure:
+      process.env.NODE_ENV ===
+      'production',
+    sameSite:'strict',
+    maxAge:
+      7*24*60*60*1000
+  }
+);
+
+sendSuccess(
+  res,
+  201,
+  {
+      accessToken,
+      user,
+  },
+  'Signup successful!'
+);
 });
 
 const loginController = asyncHandler(async (
   req,
   res,
 ) => {
-    const result = await loginService(req.validated?.body as LoginInput);
-    sendSuccess(res,200,result,'Login Successful')
+    const user = await loginService(req.validated?.body as LoginInput);
+    const refreshToken = generateRefreshToken({
+    userId:user.id,
+    email:user.email
+ });
+ const accessToken = generateAccessToken({
+  userId: user.id,
+  email:user.email
+ });
+
+res.cookie(
+   'refreshToken',
+   refreshToken,
+   {
+      httpOnly:true,
+      secure:
+        process.env.NODE_ENV ===
+        'production',
+
+      sameSite:'strict',
+
+      maxAge:
+        7*24*60*60*1000
+   }
+);
+sendSuccess(
+  res,
+  200,
+  {
+    accessToken,
+    user,
+  },
+  'Login Successful'
+);
 });
 
 const currentUserController = asyncHandler(async (
@@ -47,6 +104,62 @@ const currentUserController = asyncHandler(async (
   )=> {
     sendSuccess(res,200,req.auth,'User details')
 });
+
+export const refreshController = asyncHandler(async(
+  req,res
+)=>{
+    const refreshToken =
+  req.cookies.refreshToken;
+
+  if(!refreshToken){
+  throw new AppError(
+    'No refresh token',
+    401
+  );
+  }
+
+  const payload =
+  verifyRefreshToken(
+    refreshToken
+  );
+
+  const accessToken =
+  generateAccessToken({
+      userId:payload.userId,
+      email:payload.email
+  });
+
+  sendSuccess(
+      res,
+      200,
+      {accessToken}
+  );
+})
+
+export const logoutController =
+  asyncHandler(
+  async(_req,res)=>{
+
+    res.clearCookie(
+   'refreshToken',
+   {
+      httpOnly:true,
+      secure:
+        process.env.NODE_ENV ===
+        'production',
+      sameSite:'strict'
+   }
+);
+
+    sendSuccess(
+      res,
+      200,
+      null,
+      'Logged out'
+    );
+
+});
+
 
 export {
   signupController,

@@ -9,6 +9,11 @@ const envSchema = z.object({
   JWT_SECRET: z
     .string()
     .min(32, "JWT_SECRET too weak"),
+
+  JWT_ACCESS_SECRET:z.string().min(30),
+  JWT_REFRESH_SECRET:z.string().min(30),
+  JWT_ACCESS_EXPIRES:z.string(),
+  JWT_REFRESH_EXPIRES:z.string()
 });
 
 const parsedEnv =

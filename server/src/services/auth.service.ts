@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 
 import prisma from '../lib/prisma';
 
-import generateToken from '../utils/generateToken';
+// import generateToken from '../utils/generateToken';
 
 import {
   LoginInput,
@@ -10,6 +10,7 @@ import {
 } from '../validators/auth.validator';
 
 import AppError from '../utils/AppError';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 
 const signupService = async ({
   email,
@@ -42,19 +43,15 @@ const signupService = async ({
     },
   });
 
-  const token = generateToken({
-    userId: user.id,
-    email: user.email,
-  });
+  // const accessToken = generateAccessToken({
+  //   userId: user.id,
+  //   email: user.email,
+  // });
 
   return {
-    token,
-
-    user: {
       id: user.id,
       email: user.email,
       name: user.name,
-    },
   };
 };
 
@@ -86,21 +83,21 @@ const loginService = async ({
       401
     );
   }
-
-  const token = generateToken({
+  const payload = {
     userId: existingUser.id,
     email: existingUser.email,
-  });
+  }
+  const accessToken = generateAccessToken(payload);
+  // const token = generateToken({
+  //   userId: existingUser.id,
+  //   email: existingUser.email,
+  // }); <--- Not returning this token now.
 
   return {
-    token,
-
-    user: {
       id: existingUser.id,
       email: existingUser.email,
       name: existingUser.name,
-    },
-  };
+    };
 };
 
 export {
