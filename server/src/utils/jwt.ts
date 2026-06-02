@@ -24,7 +24,7 @@ export const generateRefreshToken = (
     env.JWT_REFRESH_SECRET,
     {
       expiresIn:
-        env.JWT_REFRESH_EXPIRES, // FIX
+        env.JWT_REFRESH_EXPIRES, 
     } as SignOptions
   );
 };

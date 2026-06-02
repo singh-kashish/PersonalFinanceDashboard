@@ -2,6 +2,8 @@
 
 import morgan from 'morgan';
 
-export default morgan(
+const logger = morgan(
   ':method :url :status :response-time ms'
 );
+
+export default logger;

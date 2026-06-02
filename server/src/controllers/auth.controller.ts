@@ -3,6 +3,9 @@ import { Request, Response, NextFunction } from 'express';
 import {
   signupService,
   loginService,
+  createRefreshToken,
+  findRefreshToken,
+  deleteRefreshToken
 } from '../services/auth.service';
 import {
   SignUpInput,
@@ -32,6 +35,7 @@ const refreshToken =
     userId:user.id,
     email:user.email
  });
+ await createRefreshToken(refreshToken,user.id);
 
 res.cookie(
   'refreshToken',
@@ -63,6 +67,7 @@ const loginController = asyncHandler(async (
   res,
 ) => {
     const user = await loginService(req.validated?.body as LoginInput);
+    
     const refreshToken = generateRefreshToken({
     userId:user.id,
     email:user.email
@@ -71,6 +76,11 @@ const loginController = asyncHandler(async (
   userId: user.id,
   email:user.email
  });
+
+ await createRefreshToken(
+  refreshToken,
+  user.id
+);
 
 res.cookie(
    'refreshToken',
@@ -105,51 +115,120 @@ const currentUserController = asyncHandler(async (
     sendSuccess(res,200,req.auth,'User details')
 });
 
-export const refreshController = asyncHandler(async(
-  req,res
-)=>{
+export const refreshController =
+asyncHandler(async(req,res)=>{
+
     const refreshToken =
-  req.cookies.refreshToken;
+      req.cookies.refreshToken;
 
-  if(!refreshToken){
-  throw new AppError(
-    'No refresh token',
-    401
-  );
-  }
+    if(!refreshToken){
 
-  const payload =
-  verifyRefreshToken(
-    refreshToken
-  );
+      throw new AppError(
+        'No refresh token',
+        401
+      );
 
-  const accessToken =
-  generateAccessToken({
-      userId:payload.userId,
-      email:payload.email
-  });
+    }
 
-  sendSuccess(
+    const payload =
+      verifyRefreshToken(
+        refreshToken
+      );
+
+    const existingToken =
+      await findRefreshToken(
+        refreshToken
+      );
+
+    if(!existingToken){
+
+      throw new AppError(
+        'Invalid session',
+        401
+      );
+
+    }
+
+    if(
+      existingToken.expiresAt <
+      new Date()
+    ){
+
+      throw new AppError(
+        'Session expired',
+        401
+      );
+
+    }
+
+    await deleteRefreshToken(
+      refreshToken
+    );
+
+    const newRefreshToken =
+      generateRefreshToken({
+          userId:payload.userId,
+          email:payload.email
+      });
+
+    await createRefreshToken(
+      newRefreshToken,
+      payload.userId
+    );
+
+    const accessToken =
+      generateAccessToken({
+          userId:payload.userId,
+          email:payload.email
+      });
+
+    res.cookie(
+      'refreshToken',
+      newRefreshToken,
+      {
+        httpOnly:true,
+        secure:
+          process.env.NODE_ENV ===
+          'production',
+        sameSite:'strict',
+        maxAge:
+          7*24*60*60*1000
+      }
+    );
+
+    sendSuccess(
       res,
       200,
-      {accessToken}
-  );
-})
+      {accessToken},
+      'Token refreshed'
+    );
+
+});
 
 export const logoutController =
-  asyncHandler(
-  async(_req,res)=>{
+asyncHandler(async(req,res)=>{
+
+    const refreshToken =
+      req.cookies.refreshToken;
+
+    if(refreshToken){
+
+      await deleteRefreshToken(
+        refreshToken
+      );
+
+    }
 
     res.clearCookie(
-   'refreshToken',
-   {
-      httpOnly:true,
-      secure:
-        process.env.NODE_ENV ===
-        'production',
-      sameSite:'strict'
-   }
-);
+      'refreshToken',
+      {
+        httpOnly:true,
+        secure:
+          process.env.NODE_ENV ===
+          'production',
+        sameSite:'strict'
+      }
+    );
 
     sendSuccess(
       res,
@@ -159,7 +238,6 @@ export const logoutController =
     );
 
 });
-
 
 export {
   signupController,

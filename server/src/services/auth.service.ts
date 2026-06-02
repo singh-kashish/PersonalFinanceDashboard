@@ -43,11 +43,6 @@ const signupService = async ({
     },
   });
 
-  // const accessToken = generateAccessToken({
-  //   userId: user.id,
-  //   email: user.email,
-  // });
-
   return {
       id: user.id,
       email: user.email,
@@ -83,15 +78,6 @@ const loginService = async ({
       401
     );
   }
-  const payload = {
-    userId: existingUser.id,
-    email: existingUser.email,
-  }
-  const accessToken = generateAccessToken(payload);
-  // const token = generateToken({
-  //   userId: existingUser.id,
-  //   email: existingUser.email,
-  // }); <--- Not returning this token now.
 
   return {
       id: existingUser.id,
@@ -99,6 +85,54 @@ const loginService = async ({
       name: existingUser.name,
     };
 };
+
+export const createRefreshToken = (token:string,userId:number)=>{
+  return prisma.refreshToken.create({
+    data:{
+      token,
+      userId,
+      expiresAt:new Date(
+        Date.now() +
+        7*24*60*60*1000
+      ),
+    }, 
+  })
+}
+
+export const findRefreshToken =
+async(token:string)=>{
+
+  return prisma.refreshToken.findUnique({
+    where:{
+      token,
+    },
+  });
+
+};
+
+export const deleteRefreshToken =
+async(token:string)=>{
+
+  return prisma.refreshToken.deleteMany({
+    where:{
+      token,
+    },
+  });
+
+};
+
+export const deleteAllRefreshTokens =
+async(userId:number)=>{
+
+  return prisma.refreshToken.deleteMany({
+    where:{
+      userId,
+    },
+  });
+
+};
+
+
 
 export {
   signupService,

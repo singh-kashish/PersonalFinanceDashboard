@@ -5,11 +5,6 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
 
   DATABASE_URL: z.url(),
-
-  JWT_SECRET: z
-    .string()
-    .min(32, "JWT_SECRET too weak"),
-
   JWT_ACCESS_SECRET:z.string().min(30),
   JWT_REFRESH_SECRET:z.string().min(30),
   JWT_ACCESS_EXPIRES:z.string(),
