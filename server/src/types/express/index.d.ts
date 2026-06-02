@@ -7,6 +7,7 @@ declare global {
         userId: number;
         email: string;
       };
+      requestId:string;
       validated?:{
         body?:unknown;
         query?:unknown;

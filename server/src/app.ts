@@ -13,8 +13,10 @@ import analyticsRoutes from './routes/analytics.routes';
 import errorMiddleware from './middlewares/error.middleware';
 import logger from './middlewares/logger.middleware';
 import { globalLimiter } from './middlewares/rateLimit.middleware';
+import requestIdMiddleware from './middlewares/requestId.middleware';
 
 const app = express();
+app.use(requestIdMiddleware);
 
 app.use(globalLimiter);
 
