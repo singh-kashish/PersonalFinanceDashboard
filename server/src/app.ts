@@ -14,9 +14,19 @@ import errorMiddleware from './middlewares/error.middleware';
 import logger from './middlewares/logger.middleware';
 import { globalLimiter } from './middlewares/rateLimit.middleware';
 import requestIdMiddleware from './middlewares/requestId.middleware';
+import swaggerUi from 'swagger-ui-express';
+
+import swaggerSpec from './config/swagger';
 
 const app = express();
 app.use(requestIdMiddleware);
+
+
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
 app.use(globalLimiter);
 

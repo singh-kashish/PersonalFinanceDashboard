@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler"
 
-const healthController = asyncHandler(async(req,res) => {
+const healthController = asyncHandler(async(_req,res) => {
         res.status(200).json({status:"ok"})
 })
 
