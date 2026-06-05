@@ -1,10 +1,10 @@
 import {Request,Response,NextFunction} from 'express'
-import {v4 as uuidv4} from 'uuid'
+import crypto from 'crypto'
 
 const requestIdMiddleware = (req:Request,res:Response,next:NextFunction)=>{
-    const requestId = uuidv4()
+    const requestId = crypto.randomUUID()
     req.requestId = requestId
-    res.setHeader('X-Request-Id',requestId)
+    res.setHeader('x-request-id',requestId)
     next()
 }
 export default requestIdMiddleware;
