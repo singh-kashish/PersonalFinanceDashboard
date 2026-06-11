@@ -1,9 +1,3 @@
-import {
-  Request,
-  Response,
-  NextFunction,
-} from 'express';
-
 import {CreateTransactionInput, GetTransactionsInput,UpdateTransactionInput,TransactionType,TransactionIdType} from '../validators/transaction.validator'
 
 import {
@@ -14,7 +8,6 @@ import {
   deleteTransactionService,
 } from '../services/transaction.service';
 
-import AppError from '../utils/AppError';
 import { sendSuccess } from '../utils/sendSuccess';
 import { asyncHandler } from '../utils/asyncHandler';
 
@@ -65,7 +58,7 @@ const updateTransaction = asyncHandler(
         req.auth.userId,
         req.validated?.body as UpdateTransactionInput
       );
-    sendSuccess(res,200,updateTransaction)
+    sendSuccess(res,200,updatedTransaction)
 });
 
 const deleteTransaction = asyncHandler(async (
