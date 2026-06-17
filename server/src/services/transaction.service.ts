@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma';
+import prisma from '../infra/prisma';
 
 import AppError from '../utils/AppError';
 import { Prisma } from '../generated/prisma';

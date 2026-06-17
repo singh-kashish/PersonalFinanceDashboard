@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 
-import prisma from '../lib/prisma';
+import prisma from '../infra/prisma';
 
 // import generateToken from '../utils/generateToken';
 

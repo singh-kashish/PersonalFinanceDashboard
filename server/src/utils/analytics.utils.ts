@@ -1,5 +1,5 @@
 // utils/analytics.utils.ts
-import prisma from '../lib/prisma';
+import prisma from '../infra/prisma';
 import { AnalyticsQueryInput, categoryTrendsQueryInput } from '../validators/analytics.validator';
 import { TransactionType } from '../generated/prisma'; // adjust path if needed
 

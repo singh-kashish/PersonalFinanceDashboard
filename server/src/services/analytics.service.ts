@@ -1,7 +1,7 @@
 // src/services/analytics.service.ts
 
 import { AnalyticsQueryInput, categoryTrendsQueryInput } from '../validators/analytics.validator';
-import prisma from '../lib/prisma';
+import prisma from '../infra/prisma';
 import { toNumber } from '../utils/decimal';
 import {
   normalizeAnalyticsInput,

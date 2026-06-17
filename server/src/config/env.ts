@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
-
+  REDIS_URL:z.url(),
   DATABASE_URL: z.url(),
   JWT_ACCESS_SECRET:z.string().min(30),
   JWT_REFRESH_SECRET:z.string().min(30),
