@@ -11,5 +11,13 @@ export const analyticsQuerySchema =
       .optional(),
   });
 
+export const categoryTrendsQuerySchema = z.object({
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
+  category: z.string().trim().optional(),
+});
 export type AnalyticsQueryInput =
   z.infer<typeof analyticsQuerySchema>;
+
+export type categoryTrendsQueryInput = 
+  z.infer<typeof categoryTrendsQuerySchema>

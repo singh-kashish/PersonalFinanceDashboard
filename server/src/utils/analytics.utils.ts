@@ -1,6 +1,6 @@
 // utils/analytics.utils.ts
 import prisma from '../lib/prisma';
-import { AnalyticsQueryInput } from '../validators/analytics.validator';
+import { AnalyticsQueryInput, categoryTrendsQueryInput } from '../validators/analytics.validator';
 import { TransactionType } from '../generated/prisma'; // adjust path if needed
 
 export type AnalyticsFilter = {
@@ -8,6 +8,12 @@ export type AnalyticsFilter = {
   to: Date;
   type?: TransactionType;
 };
+
+export type TrendsFilter = {
+  from: Date;
+  to: Date;
+  category?: string;
+}
 
 export const normalizeAnalyticsInput = (
   data: AnalyticsQueryInput
@@ -52,3 +58,38 @@ export const getRecentTransactions = async (
     take,
   });
 };
+
+export const normalizeTrendsInput = (data:categoryTrendsQueryInput):TrendsFilter =>{
+  const now = new Date()
+  if(data.from && data.to){
+    return {
+      from: new Date(data.from),
+      to: new Date(data.to),
+      ...(data.category&&{category:data.category})
+    }
+  }
+  if(data.from){
+    return{
+      from: new Date(data.from),
+      to: now,
+      ...(data.category&&{category:data.category})
+    }
+  }
+  if(data.to){
+    const to = new Date(data.to)
+    const from = new Date(to)
+    from.setFullYear(from.getFullYear()-1)
+    return{
+      from,
+      to,
+      ...(data.category && {category:data.category}),
+    }
+  }
+  const from = new Date(now)
+  from.setFullYear(from.getFullYear()-1)
+  return{
+    from,
+    to:now,
+    ...(data.category && {category:data.category})
+  }
+}

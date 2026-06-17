@@ -6,8 +6,9 @@ import {
   summaryController,
   categoryController,
   monthlyController,
+  categoryTrendsController,
 } from '../controllers/analytics.controller';
-import { analyticsQuerySchema } from "../validators/analytics.validator"
+import { analyticsQuerySchema, categoryTrendsQuerySchema } from "../validators/analytics.validator"
 
 const router = express.Router();
 
@@ -57,6 +58,19 @@ router.get(
   '/analytics/monthly',
   validate(analyticsQuerySchema,'query'),
   monthlyController
+);
+
+/**
+ * @swagger
+ * /analytics/category-trends:
+ *   get:
+ *     summary: Get category trends
+ *     tags: [Analytics]
+ */
+router.get(
+  '/analytics/category-trends',
+  validate(categoryTrendsQuerySchema,'query'),
+  categoryTrendsController
 );
 
 export default router;

@@ -1,12 +1,14 @@
 // src/services/analytics.service.ts
 
-import { AnalyticsQueryInput } from '../validators/analytics.validator';
+import { AnalyticsQueryInput, categoryTrendsQueryInput } from '../validators/analytics.validator';
 import prisma from '../lib/prisma';
 import { toNumber } from '../utils/decimal';
 import {
   normalizeAnalyticsInput,
   getRecentTransactions,
+  normalizeTrendsInput,
 } from '../utils/analytics.utils';
+import { Prisma } from '../generated/prisma';
 
 // SUMMARY
 export const summaryService = async (
@@ -208,3 +210,47 @@ export const monthlyService = async (
     recentTransactions,
   };
 };
+
+export const categoryTrendsService = async(data:categoryTrendsQueryInput,userId:number) =>{
+  const normalizedInputs = normalizeTrendsInput(data);
+  const categoryFilter =
+    normalizedInputs.category
+      ? Prisma.sql`AND category = ${normalizedInputs.category}`
+      : Prisma.empty;
+
+  const groups = await prisma.$queryRaw<
+    {
+      month: Date;
+      category: string;
+      amount: Prisma.Decimal;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT
+        DATE_TRUNC('month', date) AS month,
+        category,
+        SUM(amount)::numeric AS amount
+      FROM "Transaction"
+      WHERE
+        "userId" = ${userId}
+        AND date BETWEEN ${normalizedInputs.from}
+        AND ${normalizedInputs.to}
+        ${categoryFilter}
+      GROUP BY
+        DATE_TRUNC('month', date),
+        category
+      ORDER BY
+        month ASC
+    `
+  );
+  const trends = groups.map(item => ({
+      month:
+        item.month.toISOString().slice(0,7),
+      category:
+        item.category,
+      amount:
+        toNumber(item.amount)
+      }));
+      
+  return trends
+}

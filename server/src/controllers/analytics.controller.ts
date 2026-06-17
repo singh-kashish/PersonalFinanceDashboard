@@ -1,7 +1,7 @@
 import { Request, Response,NextFunction } from "express"
-import { AnalyticsQueryInput } from "../validators/analytics.validator";
+import { AnalyticsQueryInput, categoryTrendsQueryInput } from "../validators/analytics.validator";
 import AppError from "../utils/AppError";
-import { summaryService,categoryService, monthlyService } from "../services/analytics.service";
+import { summaryService,categoryService, monthlyService, categoryTrendsService } from "../services/analytics.service";
 import { sendSuccess } from "../utils/sendSuccess";
 import { asyncHandler } from "../utils/asyncHandler";
 //Summary
@@ -18,4 +18,11 @@ export const categoryController = asyncHandler(async (req,res) =>{
 export const monthlyController = asyncHandler(async(req,res)=>{
         const result = await monthlyService(req.validated?.query as AnalyticsQueryInput,req.auth.userId);
         sendSuccess(res,200,result,'Received Monthly statistics')
+})
+
+// Category Trends
+
+export const categoryTrendsController = asyncHandler(async(req,res)=>{
+        const result = await categoryTrendsService(req.validated?.query as categoryTrendsQueryInput,req.auth.userId);
+        sendSuccess(res,200,result,'Received Category Trends Data')
 })
