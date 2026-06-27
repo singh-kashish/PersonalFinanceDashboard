@@ -1,75 +1,47 @@
-// middlewares/auth.middleware.ts
+import { Request, Response, NextFunction } from "express";
+import AppError from "../utils/AppError";
+import { jwtPayloadSchema } from "../validators/auth.validator";
+import { verifyAccessToken } from "../utils/jwt";
 
-import {
-  Request,
-  Response,
-  NextFunction
-} from 'express';
+{/* Validates a Bearer access token and attaches a typed `req.auth` payload.
+ Logs specifics server-side but returns a generic error to the client.*/}
+const authMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
 
-import AppError from '../utils/AppError';
+  if (!authHeader) {
+    console.warn(
+      `[authMiddleware] requestId=${req.requestId} missing Authorization header`
+    );
+    return next(new AppError("Invalid or expired token", 401));
+  }
 
-import {
-  jwtPayloadSchema
-} from '../validators/auth.validator';
+  const [scheme, token] = authHeader.split(" ");
 
-import {
-  verifyAccessToken
-} from '../utils/jwt';
+  if (scheme !== "Bearer" || !token) {
+    console.warn(
+      `[authMiddleware] requestId=${req.requestId} malformed Authorization header: ${authHeader}`
+    );
+    return next(new AppError("Invalid or expired token", 401));
+  }
 
-const authMiddleware = (
-  req:Request,
-  _res:Response,
-  next:NextFunction
-)=>{
-  try{
+  try {
+    const decoded = verifyAccessToken(token);
+    const validated = jwtPayloadSchema.parse(decoded);
 
-    const authHeader =
-      req.headers.authorization;
+    req.auth = validated;
+    return next();
+  } catch (err) {
 
-    if(!authHeader){
-      throw new AppError(
-        'No token provided',
-        401
-      );
-    }
-
-    const [scheme,token] =
-      authHeader.split(' ');
-
-    if(
-      scheme !== 'Bearer' ||
-      !token
-    ){
-      throw new AppError(
-        'Invalid authorization header',
-        401
-      );
-    }
-
-    const decoded =
-      verifyAccessToken(
-        token
-      );
-
-    const validated =
-      jwtPayloadSchema.parse(
-        decoded
-      );
-
-    req.auth =
-      validated;
-
-    next();
-
-  }catch{
-
-    next(
-      new AppError(
-        'Invalid or expired token',
-        401
-      )
+    console.warn(
+      `[authMiddleware] requestId=${req.requestId} invalid or expired JWT`,
+      err
     );
 
+    if (err instanceof AppError) {
+      return next(err);
+    }
+
+    return next(new AppError("Invalid or expired token", 401));
   }
 };
 

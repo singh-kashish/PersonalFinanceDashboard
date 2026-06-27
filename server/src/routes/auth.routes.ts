@@ -6,6 +6,7 @@ import {
   currentUserController,
   logoutController,
   refreshController,
+  logoutAllController,
 } from '../controllers/auth.controller';
 
 import authMiddleware from '../middlewares/auth.middleware';
@@ -119,6 +120,7 @@ router.get(
  */
 router.post(
   '/auth/logout',
+  authMiddleware,
   logoutController
 );
 
@@ -140,6 +142,12 @@ router.post(
   '/auth/refresh',
   authLimiter,
   refreshController
+);
+
+router.post(
+  '/auth/logout-all',
+  authMiddleware,
+  logoutAllController
 );
 
 export default router;

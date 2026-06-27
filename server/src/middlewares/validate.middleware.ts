@@ -8,7 +8,8 @@ export default function validate<T extends z.ZodType>(schema:T,source:Source) : 
     return (req:Request,_res:Response,next:NextFunction) =>{
         const parsedValue = schema.safeParse(req[source]);
         if(!parsedValue.success){
-            return next(new AppError(parsedValue.error.issues[0]?.message ?? "Internal Server Error",400))
+            const message = parsedValue.error.issues.map(issue => issue.message).join(", ");
+            return next(new AppError(message ?? "Internal Server Error",400))
         }
         if(!req.validated){
             req.validated={};
