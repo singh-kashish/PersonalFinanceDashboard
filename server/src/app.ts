@@ -17,6 +17,7 @@ import requestIdMiddleware from './middlewares/requestId.middleware';
 import swaggerUi from 'swagger-ui-express';
 
 import swaggerSpec from './config/swagger';
+import { env } from './config/env';
 
 const app = express();
 app.use(requestIdMiddleware);
@@ -33,7 +34,7 @@ app.use(globalLimiter);
 app.use(helmet());
 
 app.use(cors({
-    origin:'http://localhost:5173',
+    origin: env.FRONTEND_URL,
     credentials:true,
 }));
 

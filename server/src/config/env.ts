@@ -8,7 +8,8 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET:z.string().min(30),
   JWT_REFRESH_SECRET:z.string().min(30),
   JWT_ACCESS_EXPIRES:z.string(),
-  JWT_REFRESH_EXPIRES:z.string()
+  JWT_REFRESH_EXPIRES:z.string(),
+  FRONTEND_URL:z.string().default('http://localhost:5173')
 });
 
 const parsedEnv =

@@ -11,12 +11,13 @@ import {
 import { paginate } from '../utils/pagination';
 import { buildTransactionWhere } from '../utils/buildTransactionWhere';
 import { buildTransactionOrder } from '../utils/buildTransactionOrder';
+import { invalidateAnalyticsForUser } from '../utils/redis/analyticsCache';
 
 const createTransactionService = async (
   transactionData: CreateTransactionInput,
   userId: number
 ) => {
-  return prisma.transaction.create({
+  const result = prisma.transaction.create({
     data: {
       amount: transactionData.amount,
 
@@ -34,6 +35,12 @@ const createTransactionService = async (
         : new Date(),
     },
   });
+  // Prisma did not throw => success
+  invalidateAnalyticsForUser(userId).catch((err) =>
+    console.error('Failed to invalidate analytics cache on create', { userId }, err)
+  );
+
+  return result;
 };
 
 const getTransactionService = async (
@@ -115,95 +122,61 @@ export const getTransactionsService = async (
 };
 
 
-const updateTransactionService = async (
-  transactionId:number,
-  userId:number,
-  updateData:UpdateTransactionInput
-) => {
+const updateTransactionService = async (transactionId: number,userId: number,updateData: UpdateTransactionInput) => {
+  const result = await prisma.transaction.updateMany({
+    where: {
+      id: transactionId,
+      userId,
+    },
+    data: {
+      ...(updateData.amount !== undefined && { amount: updateData.amount }),
+      ...(updateData.type !== undefined && { type: updateData.type }),
+      ...(updateData.category !== undefined && {
+        category: updateData.category.toUpperCase(),
+      }),
+      ...(updateData.description !== undefined && {
+        description: updateData.description,
+      }),
+      ...(updateData.date !== undefined && {
+        date: new Date(updateData.date),
+      }),
+    },
+  });
 
-  try {
-
-    return await prisma.transaction.update({
-
-      where:{
-        id:transactionId,
-        userId
-      },
-
-      data:{
-        ...(updateData.amount !== undefined && {
-          amount:updateData.amount
-        }),
-
-        ...(updateData.type !== undefined && {
-          type:updateData.type
-        }),
-
-        ...(updateData.category !== undefined && {
-          category:updateData.category.toUpperCase()
-        }),
-
-        ...(updateData.description !== undefined && {
-          description:updateData.description
-        }),
-
-        ...(updateData.date !== undefined && {
-          date:new Date(updateData.date)
-        }),
-      }
-
-    });
-
-  } catch {
-
-    throw new AppError(
-      'Transaction not found',
-      404
-    );
-
+  if (result.count === 0) {
+    throw new AppError('Transaction not found', 404);
   }
 
+  invalidateAnalyticsForUser(userId).catch((err) =>
+    console.error('Failed to invalidate analytics cache on update', { userId }, err)
+  );
+
+  // If you need the updated row, you can fetch it in a second query
 };
+
 
 const deleteTransactionService = async (
   transactionId: number,
   userId: number
 ) => {
-  try{
-    return await prisma.transaction.delete({
+  const result = await prisma.transaction.deleteMany({
     where: {
       id: transactionId,
+      userId,
     },
   });
-  } catch{
-    throw new AppError(
-      'Transaction not found',
-      404
-    );
+
+  if (result.count === 0) {
+    throw new AppError('Transaction not found', 404);
   }
-  const existingTransaction =
-    await prisma.transaction.findFirst({
-      where: {
-        id: transactionId,
-        userId,
-      },
-    });
 
-  // if (!existingTransaction) {
-  //   throw new AppError(
-  //     'Transaction not found.',
-  //     404
-  //   );
-  // }
+  invalidateAnalyticsForUser(userId).catch((err) =>
+    console.error('Failed to invalidate analytics cache on delete', { userId }, err)
+  );
 
-  // await prisma.transaction.delete({
-  //   where: {
-  //     id: transactionId,
-  //   },
-  // });
-
-  // return true;
+  return true;
 };
+
 
 export {
   createTransactionService,

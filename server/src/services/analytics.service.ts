@@ -9,12 +9,16 @@ import {
   normalizeTrendsInput,
 } from '../utils/analytics.utils';
 import { Prisma } from '../generated/prisma';
+import {
+  getSummaryCache,setSummaryCache,getCategoryCache,setCategoryCache,getMonthlyCache,setMonthlyCache,getCategoryTrendsCache,setCategoryTrendsCache} from '../utils/redis/analyticsCache';
 
 // SUMMARY
 export const summaryService = async (
   data: AnalyticsQueryInput,
   userId: number
 ) => {
+  const cached = await getSummaryCache(userId,data);
+  if(cached)return cached;
   const filter = normalizeAnalyticsInput(data); // { from, to, type? }
 
   const baseWhere = {
@@ -50,12 +54,14 @@ export const summaryService = async (
   const totalIncome = toNumber(incomeResult._sum.amount);
   const totalExpense = toNumber(expenseResult._sum.amount);
 
-  return {
+  const result = {
     totalIncome,
     totalExpense,
     balance: totalIncome - totalExpense,
     recentTransactions,
   };
+  await setSummaryCache(userId,data,result);
+  return result;
 };
 
 // CATEGORY
@@ -63,6 +69,8 @@ export const categoryService = async (
   data: AnalyticsQueryInput,
   userId: number
 ) => {
+  const cached = await getCategoryCache(userId,data);
+  if(cached)return cached;
   const filter = normalizeAnalyticsInput(data);
 
   const where = {
@@ -108,37 +116,18 @@ export const categoryService = async (
     0
   );
 
-  return {
-  categories: categories.map(
-    (item)=>{
-
-      const totalAmount =
-        toNumber(
-          item._sum.amount
-        );
-
+  const result = {
+  categories: categories.map((item)=>{
+      const totalAmount =toNumber(item._sum.amount);
       return {
         category:item.category,
-
         totalAmount,
-
-        transactionCount:
-          item._count.id,
-
-        percentage:
-           totalCategoryAmount > 0
-      ? Number(
-          (
-            (totalAmount / totalCategoryAmount) * 100
-          ).toFixed(2)
-        )
-      : 0,
+        transactionCount:item._count.id,
+        percentage:totalCategoryAmount > 0? Number(((totalAmount / totalCategoryAmount) * 100).toFixed(2)): 0,
       };
-    }
-  ),
-
-  recentTransactions
-};
+    }),recentTransactions};
+    await setCategoryCache(userId,data,result);
+    return result;
 };
 
 // MONTHLY
@@ -146,6 +135,8 @@ export const monthlyService = async (
   data: AnalyticsQueryInput,
   userId: number
 ) => {
+  const cached = await getMonthlyCache(userId,data);
+  if(cached)return cached;
   const filter = normalizeAnalyticsInput(data);
 
   const transactions = await prisma.transaction.findMany({
@@ -205,13 +196,17 @@ export const monthlyService = async (
     }))
     .sort((a, b) => a.month.localeCompare(b.month));
 
-  return {
+  const result = {
     monthly,
     recentTransactions,
   };
+  await setMonthlyCache(userId,data,result);
+  return result;
 };
 
 export const categoryTrendsService = async(data:categoryTrendsQueryInput,userId:number) =>{
+  const cached = await getCategoryTrendsCache(userId,data);
+  if(cached)return cached;
   const normalizedInputs = normalizeTrendsInput(data);
   const categoryFilter =
     normalizedInputs.category
@@ -251,6 +246,6 @@ export const categoryTrendsService = async(data:categoryTrendsQueryInput,userId:
       amount:
         toNumber(item.amount)
       }));
-      
+  await setCategoryTrendsCache(userId,data,trends);    
   return trends
 }
