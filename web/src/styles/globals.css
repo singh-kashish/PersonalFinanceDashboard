@@ -49,72 +49,100 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    /* Page + surfaces */
+    --background: #f8fafc;         /* Light page background (Figma: Background) */
+    --foreground: #0f172a;         /* Primary text ("Text Primary") */
+
+    --card: #ffffff;               /* Main card surface (login form, etc.) */
+    --card-foreground: #0f172a;
+
+    /* Borders / inputs */
+    --border: #e2e8f0;             /* Default border (cards, inputs, dividers) */
+    --input: #ffffff;              /* Input background (Figma: #ffffff) */
+    --ring: #10b981;               /* Focus ring; use Emerald for primary focus */
+
+    /* Accent + semantics */
+    --primary: #10b981;            /* Emerald primary (buttons, primary actions) */
+    --primary-foreground: #ffffff;
+
+    --secondary: #e2e8f0;          /* Soft chips / secondary surfaces */
+    --secondary-foreground: #0f172a;
+
+    --accent: #e2e8f0;             /* Generic hover / accent surface */
+    --accent-foreground: #0f172a;
+
+    --destructive: #f43f5e;        /* Rose danger (errors, destructive actions) */
+    --muted: #f8fafc;              /* Subtle surfaces, fills */
+    --muted-foreground: #64748b;   /* Slate muted text ("Your money, clearly") */
+
+    /* Charts / extra tokens can stay as-is or be tuned later */
+    --chart-1: #10b981;
+    --chart-2: #f43f5e;
+    --chart-3: #64748b;
+    --chart-4: #0f172a;
+    --chart-5: #e2e8f0;
+
+    /* Layout radii */
+    --radius: 0.75rem;
+
+    /* Sidebar defaults (if you use Shadcn sidebar) */
+    --sidebar: #ffffff;
+    --sidebar-foreground: #0f172a;
+    --sidebar-primary: #10b981;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e2e8f0;
+    --sidebar-accent-foreground: #0f172a;
+    --sidebar-border: #e2e8f0;
+    --sidebar-ring: #10b981;
+
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+   
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
+    --background: #0f172a;         /* Page background (Background Dark) */
+    --foreground: #f8fafc;         /* Primary text */
+
+    --card: #1e293b;               /* Card / surface (Surface Dark) */
+    --card-foreground: #f8fafc;
+
+    --secondary: #334155;          /* Secondary surface (nested cards, nav) */
+    --secondary-foreground: #f8fafc;
+
+    --border: #334155;             /* Border Dark */
+    --input: #0f172a;              /* Input well (can change to #1e293b if desired) */
+    --ring: #10b981;               /* Emerald focus ring still works in dark */
+
+    --primary: #10b981;
+    --primary-foreground: #0b1c30; /* darker text on emerald if you prefer */
+
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;   /* Text Muted Dark ("Your money, clearly") */
+
+    --accent: #334155;
+    --accent-foreground: #f8fafc;
+
+    --destructive: #f43f5e;
+
+    --chart-1: #10b981;
+    --chart-2: #f43f5e;
+    --chart-3: #94a3b8;
+    --chart-4: #1e293b;
+    --chart-5: #334155;
+
+    --sidebar: #1e293b;
+    --sidebar-foreground: #f8fafc;
+    --sidebar-primary: #10b981;
+    --sidebar-primary-foreground: #0b1c30;
+    --sidebar-accent: #334155;
+    --sidebar-accent-foreground: #f8fafc;
+    --sidebar-border: #334155;
+    --sidebar-ring: #10b981;
+
     --popover: oklch(0.205 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+
 }
 
 @layer base {

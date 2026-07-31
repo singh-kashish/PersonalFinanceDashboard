@@ -1,31 +1,29 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import {ThemeProvider} from 'next-themes'
-import { Toaster } from '@/components/ui/sonner';
+import { createRootRoute } from '@tanstack/react-router'
+import ErrorBoundary from '@/shared/components/layout/ErrorBoundary';
+import { SquareSpin } from '@/components/ui/square-spin';
+import RootComponent from '@/components/RootComponent';
+import NotFound from '@/features/app/NotFound';
 
-const queryClient = new QueryClient();
 export const Route = createRootRoute({
   component: RootComponent,
+  
+  errorComponent: ({error})=>(
+    <ErrorBoundary>
+      <div className="p-4 text-red-500">
+        Something went wrong: {String(error)}
+      </div>
+      </ErrorBoundary>
+  ),
+  pendingComponent: () =>(
+    <div className="flex min-h-screen items-center justify-center">
+      <SquareSpin size="xl" className='bg-emerald-700!' />
+    </div>
+  ),
+  notFoundComponent: () =>{
+    <NotFound/>
+  }
 })
 
-export function RootComponent() {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem
-    >
-    <QueryClientProvider client={queryClient}>
-    <main className='max-h-screen max-w-full'>
-      <Outlet />
-    </main>
-    <Toaster richColors closeButton position="bottom-right" expand visibleToasts={4}
-        toastOptions={{
-        classNames: {
-        toast:"rounded-xl shadow-2xl border",
-        },
-    }} />
-    </QueryClientProvider>
-    </ThemeProvider>
-  )
-}
+
+
+
