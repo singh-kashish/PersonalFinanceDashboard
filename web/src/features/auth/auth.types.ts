@@ -1,6 +1,4 @@
-// types/auth.ts
-import type { AxiosRequestConfig } from 'axios';
-
+// src/features/auth/auth.types.ts
 export type User = {
   id: number;
   email: string;
@@ -22,7 +20,7 @@ export interface AuthStore extends AuthState {
   bootstrapAuthFlow: () => Promise<void>;
 }
 
-// Exact backend responses (all with same user shape now)
+// Exact backend responses
 export interface AuthUserApi {
   id: number;
   email: string;

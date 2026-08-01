@@ -1,18 +1,14 @@
-// store/useAuthStore.ts
-import { create } from "zustand";
+// src/features/auth/store/useAuthStore.ts
+import { create } from 'zustand';
 import {
   type AuthState,
   type AuthStore,
   type User,
-  type MeResponseApi,
   type RefreshResponseApi,
-} from "../auth.types";
-import {
-  getAccessToken,
-  setAccessToken,
-  clearAccess,
-} from "../AuthHelpers";
-import { fetchMe, refreshAccessToken } from "../api/auth.api";
+} from '../auth.types';
+import { getAccessToken, setAccessToken, clearAccess } from '../AuthHelpers';
+import { fetchMe, refreshAccessToken } from '../api/auth.api';
+import { isNetworkError, reportIfServerUnreachable } from '@/utils/networkStatus';
 
 const getInitialState = (): AuthState => {
   const token = getAccessToken();
@@ -55,17 +51,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   finishBootstrap: () => {
-    set((state) => ({
-      ...state,
-      isBootstrapping: false,
-    }));
+    set((state) => ({ ...state, isBootstrapping: false }));
   },
 
   bootstrapAuthFlow: async () => {
-    const token = get().accessToken;
+    const existingToken = get().accessToken;
 
-    // 1. No access token at all → unauthenticated, done
-    if (!token) {
+    // 1. No token at all → definitively logged out. Nothing to verify.
+    if (!existingToken) {
       set(() => ({
         user: null,
         accessToken: null,
@@ -75,7 +68,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return;
     }
 
-    // Helper to set unauthenticated state (used in several places)
     const hardLogout = () => {
       clearAccess();
       set(() => ({
@@ -86,78 +78,82 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       }));
     };
 
-    // 2. Try /auth/me with current access token
-    let meRes: MeResponseApi | null = null;
+    // Server never confirmed OR denied anything — leave token/user untouched,
+    // just stop showing the boot spinner so the UI (ErrorLayout) can react.
+    const staleNetwork = (err: any) => {
+      reportIfServerUnreachable(err);
+      set((state) => ({ ...state, isBootstrapping: false }));
+    };
 
+    const tryRefreshAndRehydrate = async () => {
+      let refreshRes: RefreshResponseApi;
+
+      try {
+        refreshRes = await refreshAccessToken();
+      } catch (err: any) {
+        if (isNetworkError(err)) {
+          staleNetwork(err);
+          return;
+        }
+        // Server responded and said the refresh token is bad/expired.
+        hardLogout();
+        return;
+      }
+
+      if (!refreshRes.success) {
+        hardLogout();
+        return;
+      }
+
+      const newToken = refreshRes.data.accessToken;
+      setAccessToken(newToken);
+      set(() => ({ accessToken: newToken, isAuthenticated: true }));
+
+      try {
+        const meRes2 = await fetchMe(newToken);
+        set(() => ({
+          user: meRes2.data.user as User,
+          isAuthenticated: true,
+          isBootstrapping: false,
+        }));
+      } catch (err: any) {
+        if (isNetworkError(err)) {
+          staleNetwork(err);
+          return;
+        }
+        // Brand-new access token got rejected immediately — treat as a real
+        // auth failure rather than looping.
+        hardLogout();
+      }
+    };
+
+    // 2. Verify the existing access token against /auth/me.
     try {
-      const token = get().accessToken;
-      if(!token)throw('No token')
-      meRes = await fetchMe(token);
-    } catch (err: any) {
-      // Network / unexpected errors: safest is to treat as logged out
-      hardLogout();
-      return;
-    }
-
-    if (meRes.success) {
-      // Token is valid, we have user
-      const user: User = meRes.data.user;
+      const meRes = await fetchMe(existingToken);
       set(() => ({
-        user,
+        user: meRes.data.user as User,
         isAuthenticated: true,
         isBootstrapping: false,
       }));
       return;
+    } catch (err: any) {
+      if (isNetworkError(err)) {
+        // Offline, DNS failure, server down, CORS — server said nothing.
+        // Never log the user out for this.
+        staleNetwork(err);
+        return;
+      }
+
+      const status = err?.response?.status;
+      if (status === 401) {
+        // Server explicitly rejected the access token — try to refresh.
+        await tryRefreshAndRehydrate();
+        return;
+      }
+
+      // Any other real response (500, etc.) is a server problem, not proof
+      // the session is invalid. Don't log out over it.
+      staleNetwork(err);
     }
-
-    // At this point, /auth/me returned { success: false, message: "Invalid or expired token" }
-
-    // 3. Try /auth/refresh using cookie-based refresh token
-    let refreshRes: RefreshResponseApi;
-
-    try {
-      refreshRes = await refreshAccessToken();
-    } catch {
-      hardLogout();
-      return;
-    }
-
-    if (!refreshRes.success) {
-      // Refresh failed → must log in again
-      hardLogout();
-      return;
-    }
-
-    const newToken = refreshRes.data.accessToken;
-
-    // Save new token to localStorage and store
-    setAccessToken(newToken);
-    set(() => ({
-      accessToken: newToken,
-      isAuthenticated: true, // tentatively true
-    }));
-
-    // 4. Call /auth/me again with new token
-    let meRes2: MeResponseApi;
-
-    try {
-      meRes2 = await fetchMe(newToken);
-    } catch {
-      hardLogout();
-      return;
-    }
-
-    if (!meRes2.success) {
-      // Even after refresh, token isn't usable → log out
-      hardLogout();
-      return;
-    }
-
-    const user: User = meRes2.data.user;
-    set(() => ({
-      user,
-      isAuthenticated: true,
-      isBootstrapping: false,
-    }));
   },
 }));

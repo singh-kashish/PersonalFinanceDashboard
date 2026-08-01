@@ -1,230 +1,122 @@
-# PersonalFinanceDashboard
+# Flo — Personal Finance Dashboard
 
-## Personal Finance Tracker API - Server
+A full-stack personal finance tracker: log income/expenses, browse and filter
+transactions, and view spend analytics (category breakdown, monthly trends).
 
-Production-oriented Personal Finance Tracker built with Node.js, Express, TypeScript, PostgreSQL, Prisma, JWT Authentication, Analytics APIs, Validation, and OpenAPI documentation.
+Monorepo with two independently deployable apps:
 
-## Features
+```
+PersonalFinanceDashboard/
+├── server/   Node.js + Express + TypeScript API
+└── web/      Vite + React + TypeScript SPA
+```
 
-### Authentication
+## Stack
 
-- User Registration
-- User Login
-- JWT Access Tokens
-- Refresh Token Rotation
-- Protected Routes
+**Server**
 
-### Transactions
+- Express 5, TypeScript
+- PostgreSQL via Prisma ORM (6.19.3)
+- Redis (analytics caching)
+- JWT auth: short-lived access token (Bearer header) + rotating refresh
+  token (HttpOnly cookie)
+- Zod for request validation
+- Jest + Supertest for tests
+- Swagger/OpenAPI docs generated from JSDoc route comments
 
-- Create Transaction
-- Get Transaction
-- Get All Transactions
-- Update Transaction
-- Delete Transaction
+**Web**
 
-### Filtering & Pagination
+- Vite, React 19, TypeScript
+- TanStack Router (file-based routes) + TanStack Query (server state)
+- Zustand (auth state, global error state)
+- Tailwind CSS v4, shadcn/ui, Radix primitives
+- Axios (API client, with request/response interceptors)
 
-- Pagination
-- Date Range Filtering
-- Category Filtering
-- Transaction Type Filtering
-- Sorting
+## Prerequisites
 
-### Analytics
+- Node.js 20+
+- PostgreSQL instance
+- Redis instance
 
-#### Summary
+## Getting started
 
-- Total Income
-- Total Expense
-- Current Balance
-- Recent Transactions
+### 1. Server
 
-#### Categories
-
-- Category-wise Aggregation
-- Transaction Counts
-- Category Percentage Distribution
-
-#### Monthly Analytics
-
-- Monthly Income
-- Monthly Expense
-- Monthly Balance
-
-#### Category Trends
-
-- Monthly Category Spending Trends
-- Historical Category Tracking
-- Top Increasing Categories
-
-### API Quality
-
-- TypeScript
-- Zod Validation
-- Centralized Error Handling
-- Async Error Wrapper
-- Prisma ORM
-- PostgreSQL
-- Swagger/OpenAPI Documentation
-
----
-
-## Tech Stack
-
-### Backend
-
-- Node.js
-- Express
-- TypeScript
-
-### Database
-
-- PostgreSQL
-- Prisma ORM
-- Neon Database
-
-### Authentication
-
-- JWT
-- Refresh Tokens
-
-### Validation
-
-- Zod
-
-### Documentation
-
-- Swagger/OpenAPI
-
----
-
-## Architecture
-
-Client
-↓
-Express API
-↓
-Controllers
-↓
-Services
-↓
-Prisma ORM
-↓
-PostgreSQL
-
-Authentication Layer
-↓
-JWT Middleware
-↓
-Protected Routes
-
-Analytics Layer
-↓
-Aggregations
-↓
-Prisma + Raw SQL
-↓
-Response DTOs
-
----
-
-## Database Design
-
-### User
-
-Stores application users and authentication data.
-
-### Transaction
-
-Stores:
-
-- Amount
-- Type (Income / Expense)
-- Category
-- Description
-- Date
-
-Optimized using multiple indexes:
-
-- userId
-- userId + date
-- userId + type
-- category
-- userId + category
-
-### RefreshToken
-
-Stores refresh tokens for session management.
-
----
-
-## Analytics Endpoints
-
-GET /analytics/summary
-
-Returns:
-
-- Total Income
-- Total Expense
-- Balance
-- Recent Transactions
-
-GET /analytics/categories
-
-Returns:
-
-- Category Totals
-- Category Percentages
-- Transaction Counts
-
-GET /analytics/monthly
-
-Returns:
-
-- Monthly Income
-- Monthly Expense
-- Monthly Balance
-
-GET /analytics/category-trends
-
-Returns:
-
-- Monthly Category Trends
-- Top Increasing Categories
-
----
-
-## Future Improvements
-
-- Redis Caching
-- Docker Compose
-- GitHub Actions CI/CD
-- Structured Logging (Pino)
-- OpenTelemetry Tracing
-- Grafana Dashboards
-- Frontend Dashboard
-- AI Spending Insights
-
----
-
-## Running Locally
-
-Install dependencies
-
+```bash
+cd server
 npm install
+cp .env.example .env   # set DATABASE_URL, REDIS_URL, JWT secrets, etc.
+npx prisma migrate deploy
+npm run dev             # http://localhost:<port>, ts-node-dev with auto-restart
+```
 
-Configure environment
+Other server scripts:
 
-cp .env.example .env
+| Script               | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `npm run dev`        | Dev server with hot reload             |
+| `npm test`           | Run Jest test suite (`--runInBand`)    |
+| `npm run test:watch` | Jest in watch mode                     |
+| `npm run build`      | Compile TypeScript to `dist/`          |
+| `npm start`          | Run compiled server (`dist/server.js`) |
 
-Run Prisma migrations
+API docs are served via `swagger-ui-express`; route JSDoc lives alongside
+each router (`src/routes/*.routes.ts`).
 
-npx prisma migrate dev
+### 2. Web
 
-Start development server
+```bash
+cd web
+npm install
+cp .env.example .env   # set VITE_API_URL
+npm run dev             # http://localhost:5173
+```
 
-npm run dev
+| Script            | Purpose                              |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Vite dev server                      |
+| `npm run build`   | Type-check + production build        |
+| `npm run lint`    | ESLint                               |
+| `npm run preview` | Preview the production build locally |
 
-Open Swagger
+## API surface
 
-http://localhost:3000/api-docs
+All routes are prefixed with the server's base path (see `VITE_API_URL`).
+
+**Auth** (`/auth`)
+| Method | Path | Auth required | Notes |
+|---|---|---|---|
+| POST | `/auth/signup` | No | Sets refresh-token cookie, returns access token |
+| POST | `/auth/login` | No | Sets refresh-token cookie, returns access token |
+| GET | `/auth/me` | Bearer | Current user |
+| POST | `/auth/refresh` | Refresh cookie | Rotates refresh token, returns new access token |
+| POST | `/auth/logout` | Bearer | Revokes current refresh token |
+| POST | `/auth/logout-all` | Bearer | Revokes all of the user's refresh tokens |
+
+**Transactions** (`/transactions`, all Bearer-protected)
+| Method | Path |
+|---|---|
+| POST | `/transactions` |
+| GET | `/transactions` |
+| GET | `/transactions/:id` |
+| PATCH | `/transactions/:id` |
+| DELETE | `/transactions/:id` |
+
+**Analytics** (`/analytics`)
+| Method | Path |
+|---|---|
+| GET | `/analytics/summary` |
+| GET | `/analytics/categories` |
+| GET | `/analytics/monthly` |
+| GET | `/analytics/category-trends` |
+
+**Health**
+| Method | Path |
+|---|---|
+| GET | `/health` |
+
+## Further reading
+
+See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data model, the auth
+design (token rotation, refresh flow, bootstrap state machine), the
+frontend error/circuit-breaker layer, and caching strategy.

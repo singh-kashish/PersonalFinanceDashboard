@@ -21,9 +21,9 @@ class ErrorBoundary extends Component<Props,State> {
     ) {
       return (
         <div className="flex-1 w-full min-h-screen p-8 text-center">
-          {/* <h2>
+          <h2>
             Something went wrong
-          </h2> */}
+          </h2>
         </div>
       );
     }

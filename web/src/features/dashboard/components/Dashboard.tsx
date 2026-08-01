@@ -1,6 +1,6 @@
 const Dashboard = () =>{
     return (<div>
-        Dashboard
+        Dashboard dasfdsf
     </div>);
 }
 export default Dashboard;

@@ -7,7 +7,7 @@ export const Route = createFileRoute('/')({
 
 function RouteComponent() {
   return (
-    <main className="min-h-screen w-full flex items-center justify-center bg-background">
+    <main className="min-h-screen h-dvh w-full flex items-center justify-center bg-background">
         <FloLoginPage/>
     </main>
   );

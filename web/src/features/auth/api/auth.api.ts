@@ -1,30 +1,33 @@
 // src/features/auth/api/auth.api.ts
+import axios from 'axios';
 import { apiClient } from '@/lib/apiClient';
-import axios from "axios";
-import type { MeResponseApi, RefreshResponseApi, SignupLoginResponseApi, } from "../auth.types";
+import type {
+  MeResponseApi,
+  RefreshResponseApi,
+  SignupLoginResponseApi,
+} from '../auth.types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const refreshAccessToken = async () => {
-  const response:RefreshResponseApi = await axios.post(
+// Using raw axios here for bootstrap, but returning .data consistently
+export const refreshAccessToken = async (): Promise<RefreshResponseApi> => {
+  const res = await axios.post<RefreshResponseApi>(
     `${API_URL}auth/refresh`,
     {},
-    { withCredentials: true }
+    { withCredentials: true },
   );
-  return response;
+  return res.data;
 };
 
-export const fetchMe = async (token: string) => {
-  const response : MeResponseApi = await axios.get(`${API_URL}/auth/me`, {
+export const fetchMe = async (token: string): Promise<MeResponseApi> => {
+  const res = await axios.get<MeResponseApi>(`${API_URL}auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true,
   });
-  return response;
+  return res.data;
 };
 
-
-
-
+// Normal API client for app calls
 export const login = async (payload: { email: string; password: string }) => {
   const res = await apiClient.post<SignupLoginResponseApi>('/auth/login', payload);
   return res.data;
@@ -41,4 +44,3 @@ export const fetchMeUsingApiClient = async (token: string) => {
   });
   return res.data;
 };
-
