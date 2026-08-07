@@ -2,6 +2,7 @@
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import Header from './Header';
 import { AsideNav } from './AsideNav';
+import NavItem from './NavItem';
 
 export type Section = 'dashboard' | 'analytics' | 'transactions' | 'settings';
 
@@ -25,6 +26,7 @@ export function AppShell() {
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Main content */}
         <main className="flex-1 p-4">
+          <NavItem to='' icon='<h1>ddd</h1>' label='test'></NavItem>
           <Outlet />
         </main>
 

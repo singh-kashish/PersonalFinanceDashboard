@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { FloLoginPage } from './AuthCard';
 import { SquareSpin } from '@/components/ui/square-spin';
 import Dashboard from '@/features/dashboard/components/Dashboard'; // whatever your dashboard root is
+import { AppShell } from '@/features/app/AppShell';
 
 interface AuthShellProps {
   children: ReactNode; 
@@ -58,7 +59,7 @@ export function AuthShell({ children }: AuthShellProps) {
   //    - For 404s, root notFoundComponent will show inside this shell
   if (pathname === '/') {
     // Very short-lived state while effect runs; render dashboard here as a fallback
-    return <Dashboard />;
+    return <AppShell/>;
   }
 
   return <>{children}</>;

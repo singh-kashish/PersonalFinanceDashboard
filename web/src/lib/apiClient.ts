@@ -9,6 +9,7 @@ import { refreshQueue } from '@/utils/refreshQueue';
 import { refreshAccessToken } from '@/features/auth/api/auth.api';
 import type { RefreshResponseApi } from '@/features/auth/auth.types';
 import { isNetworkError, reportIfServerUnreachable, clearServerUnreachable } from '@/utils/networkStatus';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 interface RetriableRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -82,14 +83,19 @@ apiClient.interceptors.response.use(
 
       return apiClient(originalRequest);
     } catch (refreshError: any) {
+      
       refreshQueue.process(null);
-
+      
       if (isNetworkError(refreshError)) {
         // Refresh itself couldn't reach the server — not proof the session
         // is dead. Leave the token alone.
         reportIfServerUnreachable(refreshError);
-      } else {
-        clearAccess();
+      } else if(refreshError.response?.status===401 || refreshError.response?.status === 403){
+        const { logout } = useAuthStore.getState();
+        logout();
+      }else {
+       reportIfServerUnreachable(refreshError);
+       return Promise.reject(refreshError);
       }
 
       return Promise.reject(refreshError);

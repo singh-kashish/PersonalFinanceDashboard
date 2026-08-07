@@ -95,8 +95,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           staleNetwork(err);
           return;
         }
-        // Server responded and said the refresh token is bad/expired.
-        hardLogout();
+        const status = err.response?.status;
+        if (status === 401 || status === 403) {
+          hardLogout();   // server explicitly rejected the refresh token
+          return;
+        }
+        // 500/502/503/429/etc — the server failed to process this, it didn't reject you
+        staleNetwork(err);
         return;
       }
 

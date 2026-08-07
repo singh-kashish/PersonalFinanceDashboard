@@ -46,6 +46,7 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+    --selected-nav-dark-green: var(--selected-nav-dark-green);
 }
 
 :root {
@@ -89,15 +90,44 @@
     --sidebar: #ffffff;
     --sidebar-foreground: #0f172a;
     --sidebar-primary: #10b981;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #e2e8f0;
+    --sidebar-primary-foreground: #ffffff; 
+    --sidebar-accent: #E2E8F0; /* dashboard card box shadow*/
     --sidebar-accent-foreground: #0f172a;
     --sidebar-border: #e2e8f0;
     --sidebar-ring: #10b981;
 
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-   
+    --selected-nav-dark-green: #006C49;
+
+    --text-small: #3C4A42;
+    --text_primary_username_title: #0B1C30;
+    --sidebar-selected:#DCE9FF;
+    --sidebar-selected-text: #006C49;
+    --sidebar-fill:#F8F9FF;
+    --sidebar-border: #BBCABF; /*table border*/
+    --title-text-color:#006C49;
+    --bellicon-reddot:#F43F5E; /*negative numbers*/
+    --bar_table_header:#EFF4FF; /*table header(title etc)+amount bar*/
+    --color-white-80: rgba(255, 255, 255, 0.8); /*dashboard card fill%*/
+    --color-income: #15803D;
+    --color-categoryOne: #3B82F6;
+    --color-categoryThree: #A855F7;
+    --color-categoryTwo: #FB923C;
+    --color-incomePillFill: #DCFCE7;
+    --color-categoryFive: #EAB308;
+    --chart-income-light: rgba(16, 185, 129, 0.1);
+    --color-category: #1D4ED8;
+    --color-category1-text: #7E22CE;
+    --color-category2-text: #A16207;
+    --color-category3-text:#C2410C;
+    --color-category4-fill: #DBEAFE;
+    --color-category5-fill: #F1F5F9;
+    --color-category-6fill: #F3E8FF;
+    --color-expense-light: #rgba(244, 63, 94, 0.1);
+    --color-category2-fill: #FEF9C3;
+    --color-category3-fill: #FFEDD5;
+
 }
 
 .dark {
@@ -142,7 +172,17 @@
 
     --popover: oklch(0.205 0 0);
     --popover-foreground: oklch(0.985 0 0);
+    --selected-nav-dark-green:#4EDEA3;
 
+    --sidebar-fill: #1E293B;
+    --siderbar-border: #475569;
+    --text-small:#94A3B8;
+    --sidebar-selected-text: #4EDEA3;
+    --sidebar-selected-fill: #213145;
+    --sidebar-button-text: #00422B;
+    --sidebar-button-fill: #10B981;
+    --sidebar-border: #475569; /*card fill*/
+    --title-text-color:#F8FAFC;
 }
 
 @layer base {
@@ -156,3 +196,4 @@
     @apply font-sans;
     }
 }
+

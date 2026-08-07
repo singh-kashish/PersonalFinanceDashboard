@@ -5,15 +5,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { login } from "../api/auth.api";
 import { useMutation } from "@tanstack/react-query";
 import type { SignupLoginResponseApi } from "../auth.types";
+import { toast } from "sonner";
 
 const useLoginHook = () =>{
     const setCredentials = useAuthStore((s) => s.setCredentials);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, touchedFields, isSubmitted, submitCount  },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    mode:"onChange"
   });
 
   const loginMutation = useMutation({
@@ -23,6 +25,7 @@ const useLoginHook = () =>{
         user: data.data.user,
         accessToken: data.data.accessToken,
       });
+      toast.success('Logged in successfully!')
       // navigate to '/dashboard'
     },
   });
@@ -33,7 +36,7 @@ const useLoginHook = () =>{
 
   const showError = !!errors.email || !!errors.password || loginMutation.isError;
 
-  return {register,handleSubmit, loginMutation,onSubmit, showError, errors};
+  return {register,handleSubmit, loginMutation,onSubmit, showError, errors,submitCount,touchedFields, isSubmitted};
 }
 
 export default useLoginHook
