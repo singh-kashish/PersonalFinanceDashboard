@@ -28,6 +28,10 @@ const useLoginHook = () =>{
       toast.success('Logged in successfully!')
       // navigate to '/dashboard'
     },
+    onError: (errors) =>{
+        toast.error('Error Logging in')
+        console.error(errors.cause,errors.message)
+    }
   });
 
   const onSubmit = (values: LoginFormValues) => {

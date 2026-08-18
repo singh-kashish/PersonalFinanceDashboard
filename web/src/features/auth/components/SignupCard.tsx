@@ -14,7 +14,7 @@ const SignupCard = ({setShowSignup}:SignupCardProp) =>{
 return (<>
         <AuthErrorDialog hasFieldErrors={hasFieldErrors} submitCount={submitCount} 
         title={'We couldn’t sign you up'} 
-        description={'There seems to be an issue, please check errors below and if this keeps happening, reach out to us.'}
+        description={'There seems to be an issue, please check errors below and if this keeps happening, reach out to us.'} visible={signupMutation.isError}
         />
 
           {/* Form card */}
@@ -26,9 +26,10 @@ return (<>
               border dark:border-[#334155]
               px-5 py-6
               space-y-5">
-            {signupFieldData.map((field)=><AuthCardInput<SignupFormValues> {...field} registerFn={register}
+            {signupFieldData.map((field)=><AuthCardInput<SignupFormValues> {...field}
+                  registerFn={register}
                   touchedBoolean={!!touchedFields[field.id]} errorBoolean={!!errors[field.id]}
-                   errorMessage={errors[field.id]?.message as string | undefined} />)}
+                  errorMessage={errors[field.id]?.message as string | undefined} />)}
             <AuthSubmitButton beforeSubmitTitle={'Sign up'} afterSubmitTitle='Signing up…' mutationStatus={signupMutation.isPending}/>
             <AuthCardFooter text={'Have an account?'} goTo={'Log in'} setFunction={setShowSignup} setBool={false}/>
           </form>

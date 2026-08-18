@@ -20,7 +20,7 @@ export type AuthCardInputProps<TFormValues extends FieldValues> = {
     helpText?:string,
     placeholder: string,
     autoComplete: 'email'|'set-password',
-    id: FieldPath<TFormValues>,//'email'|'confirmPassword'|'password'
+    id: FieldPath<TFormValues>,
     type: 'email'|'password',
 }
 
@@ -63,9 +63,9 @@ export const loginFieldData: LoginFieldConfig[] = [
   {
     id: "password",
     type: "password",
-    autoComplete: "set-password", // or "current-password" if you want to keep that
+    autoComplete: "set-password", 
     label: "Password",
-    helpText: "8+ characters with at least one number.",
+    helpText: "6+ characters with at least one number.",
     placeholder: "••••••••",
   },
 ];

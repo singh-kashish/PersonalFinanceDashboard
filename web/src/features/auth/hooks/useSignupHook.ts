@@ -16,6 +16,9 @@ export const useSignupHook = () =>{
             setCredentials(data.data)
             toast.success('Signup up successfully!');
         },
+        onError: () =>{
+            toast.error('Signup unsuccessful')
+        }
     });
     const onSubmit = (values:SignupFormValues) =>{
         signupMutation.mutate(values);

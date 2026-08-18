@@ -16,7 +16,7 @@ const LoginCard = ({setShowSignup}:LoginCardProps) =>{
     return (
         <>
           <AuthErrorDialog title={'We couldn’t log you in'} description="Double‑check your email and password and try again. If this keeps happening,
-                reset your password from the email link." submitCount={submitCount} hasFieldErrors={hasFieldErrors}/>
+                reset your password from the email link." submitCount={submitCount} hasFieldErrors={hasFieldErrors} visible={loginMutation.isError}/>
           {/* Form card */}
           <form
             onSubmit={handleSubmit(onSubmit)}

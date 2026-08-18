@@ -1,9 +1,9 @@
-type AuthErrorDialogProps = {hasFieldErrors:boolean,submitCount:number,title:string,description:string};
-const AuthErrorDialog = ({hasFieldErrors,submitCount,title,description}:AuthErrorDialogProps) =>{
+type AuthErrorDialogProps = {hasFieldErrors:boolean,submitCount:number,title:string,description:string,visible:boolean};
+const AuthErrorDialog = ({hasFieldErrors,submitCount,title,description,visible}:AuthErrorDialogProps) =>{
     return (
         <>
         {/* Error alert   */}
-          {hasFieldErrors && submitCount>0 && (
+          {hasFieldErrors && submitCount>0 && visible && (
             <div
               className="
                 rounded-lg
