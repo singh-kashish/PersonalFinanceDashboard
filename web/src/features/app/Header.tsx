@@ -1,9 +1,20 @@
-function Header() {
+import type { User } from "../auth/auth.types";
+import { ModeToggle } from "@/components/mode-toggle";
+
+type HeaderProps={
+  id:string;
+  user: User | null;
+}
+function Header({id, user}:HeaderProps) {
+  console.log(user?.email,user?.name)
   return (
-    <header className="sticky top-0 z-20 h-14 border-b border-slate-800 bg-background/80 backdrop-blur">
-      <div className="h-full flex items-center justify-between px-4">
-        <div className="font-semibold">Flo</div>
-        <div>User/avatar/etc</div>
+    <header className="flex justify-between items-center px-4 w-full h-16 border-b border-sidebar-border border-l bg-sidebar-fill" id={id}>
+      <div className="w-full">
+        <h3 className="text-3xl font-bold text-selected-nav-dark-green ">Flo</h3>
+      </div>
+      <div className="flex justify-end items-center w-full">
+        <ModeToggle/>
+        <h2 className="flex items-center justify-center bg-primary rounded-full p-3 text-sidebar-button-text font-bold uppercase h-12 w-12 mx-2">{ (user?.name?.[0]) ?? (user?.email?.[0]) ?? null }</h2>
       </div>
     </header>
   );

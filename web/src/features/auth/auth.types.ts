@@ -39,9 +39,7 @@ export interface SignupLoginResponseApi {
 export interface MeResponseApi {
   success: boolean;
   message: string;
-  data: {
-    user: AuthUserApi;
-  };
+  data: AuthUserApi;
 }
 
 export interface RefreshResponseApi {

@@ -117,7 +117,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       try {
         const meRes2 = await fetchMe(newToken);
         set(() => ({
-          user: meRes2.data.user as User,
+          user: meRes2.data as User,
           isAuthenticated: true,
           isBootstrapping: false,
         }));
@@ -136,7 +136,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const meRes = await fetchMe(existingToken);
       set(() => ({
-        user: meRes.data.user as User,
+        user: meRes.data as User,
         isAuthenticated: true,
         isBootstrapping: false,
       }));

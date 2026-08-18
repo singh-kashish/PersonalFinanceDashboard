@@ -6,194 +6,246 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
-    --selected-nav-dark-green: var(--selected-nav-dark-green);
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', sans-serif;
+
+  /* Existing mappings */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Existing custom color */
+  --color-selected-nav-dark-green: var(--selected-nav-dark-green);
+
+  /* NEW: expose all remaining custom tokens to Tailwind */
+  --color-text-small: var(--text-small);
+  --color-text-primary-username-title: var(--text_primary_username_title);
+  --color-sidebar-selected: var(--sidebar-selected);
+  --color-sidebar-selected-text: var(--sidebar-selected-text);
+  --color-sidebar-fill: var(--sidebar-fill);
+  --color-title-text-color: var(--title-text-color);
+  --color-bellicon-reddot: var(--bellicon-reddot);
+  --color-bar-table-header: var(--bar_table_header);
+  --color-white-80: var(--color-white-80);
+  --color-income: var(--color-income);
+  --color-category-one: var(--color-categoryOne);
+  --color-category-two: var(--color-categoryTwo);
+  --color-category-three: var(--color-categoryThree);
+  --color-category-five: var(--color-categoryFive);
+  --color-income-pill-fill: var(--color-incomePillFill);
+  --color-chart-income-light: var(--chart-income-light);
+  --color-category: var(--color-category);
+  --color-category1-text: var(--color-category1-text);
+  --color-category2-text: var(--color-category2-text);
+  --color-category3-text: var(--color-category3-text);
+  --color-category4-fill: var(--color-category4-fill);
+  --color-category5-fill: var(--color-category5-fill);
+  --color-category6-fill: var(--color-category-6fill);
+  --color-expense-light: var(--color-expense-light);
+  --color-category2-fill: var(--color-category2-fill);
+  --color-category3-fill: var(--color-category3-fill);
+
+  /* Dark-mode specific sidebar extras */
+  --color-sidebar-selected-fill: var(--sidebar-selected-fill);
+  --color-sidebar-button-text: var(--sidebar-button-text);
+  --color-sidebar-button-fill: var(--sidebar-button-fill);
 }
 
+/* LIGHT THEME */
 :root {
-    /* Page + surfaces */
-    --background: #f8fafc;         /* Light page background (Figma: Background) */
-    --foreground: #0f172a;         /* Primary text ("Text Primary") */
+  /* Page + surfaces */
+  --background: #f8fafc;          /* Light page background */
+  --foreground: #0f172a;          /* Primary text */
 
-    --card: #ffffff;               /* Main card surface (login form, etc.) */
-    --card-foreground: #0f172a;
+  --card: #ffffff;                /* Card surface */
+  --card-foreground: var(--foreground);
 
-    /* Borders / inputs */
-    --border: #e2e8f0;             /* Default border (cards, inputs, dividers) */
-    --input: #ffffff;              /* Input background (Figma: #ffffff) */
-    --ring: #10b981;               /* Focus ring; use Emerald for primary focus */
+  /* Borders / inputs */
+  --border: #e2e8f0;              /* Default border */
+  --input: var(--card);           /* Input background same as card */
+  --ring: #10b981;                /* Emerald focus ring */
 
-    /* Accent + semantics */
-    --primary: #10b981;            /* Emerald primary (buttons, primary actions) */
-    --primary-foreground: #ffffff;
+  /* Accent + semantics */
+  --primary: #10b981;             /* Emerald primary */
+  --primary-foreground: #ffffff;
 
-    --secondary: #e2e8f0;          /* Soft chips / secondary surfaces */
-    --secondary-foreground: #0f172a;
+  /* These three are visually the same → derive from existing tokens */
+  --secondary: var(--border);     /* Soft chips / secondary surfaces */
+  --secondary-foreground: var(--foreground);
 
-    --accent: #e2e8f0;             /* Generic hover / accent surface */
-    --accent-foreground: #0f172a;
+  --accent: var(--border);        /* Generic hover / accent surface */
+  --accent-foreground: var(--foreground);
 
-    --destructive: #f43f5e;        /* Rose danger (errors, destructive actions) */
-    --muted: #f8fafc;              /* Subtle surfaces, fills */
-    --muted-foreground: #64748b;   /* Slate muted text ("Your money, clearly") */
+  --destructive: #f43f5e;         /* Rose danger */
+  --muted: var(--background);     /* Subtle surfaces */
+  --muted-foreground: #64748b;    /* Muted text */
 
-    /* Charts / extra tokens can stay as-is or be tuned later */
-    --chart-1: #10b981;
-    --chart-2: #f43f5e;
-    --chart-3: #64748b;
-    --chart-4: #0f172a;
-    --chart-5: #e2e8f0;
+  /* Charts */
+  --chart-1: #10b981;
+  --chart-2: #f43f5e;
+  --chart-3: #64748b;
+  --chart-4: #0f172a;
+  --chart-5: #e2e8f0;
 
-    /* Layout radii */
-    --radius: 0.75rem;
+  /* Layout radii */
+  --radius: 0.75rem;
 
-    /* Sidebar defaults (if you use Shadcn sidebar) */
-    --sidebar: #ffffff;
-    --sidebar-foreground: #0f172a;
-    --sidebar-primary: #10b981;
-    --sidebar-primary-foreground: #ffffff; 
-    --sidebar-accent: #E2E8F0; /* dashboard card box shadow*/
-    --sidebar-accent-foreground: #0f172a;
-    --sidebar-border: #e2e8f0;
-    --sidebar-ring: #10b981;
+  /* Sidebar defaults */
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--secondary);         /* uses same color */
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --selected-nav-dark-green: #006C49;
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
 
-    --text-small: #3C4A42;
-    --text_primary_username_title: #0B1C30;
-    --sidebar-selected:#DCE9FF;
-    --sidebar-selected-text: #006C49;
-    --sidebar-fill:#F8F9FF;
-    --sidebar-border: #BBCABF; /*table border*/
-    --title-text-color:#006C49;
-    --bellicon-reddot:#F43F5E; /*negative numbers*/
-    --bar_table_header:#EFF4FF; /*table header(title etc)+amount bar*/
-    --color-white-80: rgba(255, 255, 255, 0.8); /*dashboard card fill%*/
-    --color-income: #15803D;
-    --color-categoryOne: #3B82F6;
-    --color-categoryThree: #A855F7;
-    --color-categoryTwo: #FB923C;
-    --color-incomePillFill: #DCFCE7;
-    --color-categoryFive: #EAB308;
-    --chart-income-light: rgba(16, 185, 129, 0.1);
-    --color-category: #1D4ED8;
-    --color-category1-text: #7E22CE;
-    --color-category2-text: #A16207;
-    --color-category3-text:#C2410C;
-    --color-category4-fill: #DBEAFE;
-    --color-category5-fill: #F1F5F9;
-    --color-category-6fill: #F3E8FF;
-    --color-expense-light: #rgba(244, 63, 94, 0.1);
-    --color-category2-fill: #FEF9C3;
-    --color-category3-fill: #FFEDD5;
+  --selected-nav-dark-green: #006C49;
 
+  /* App-specific tokens */
+  --text-small: #3C4A42;
+  --text_primary_username_title: #0B1C30;
+
+  --sidebar-selected: #DCE9FF;
+  --sidebar-selected-text: #006C49;
+  --sidebar-fill: #F8F9FF;
+
+  --title-text-color: #006C49;
+  --bellicon-reddot: #F43F5E;
+
+  --bar_table_header: #EFF4FF;
+
+  --color-white-80: rgba(255, 255, 255, 0.8);
+
+  --color-income: #15803D;
+  --color-incomePillFill: #DCFCE7;
+
+  --color-categoryOne: #3B82F6;
+  --color-categoryTwo: #FB923C;
+  --color-categoryThree: #A855F7;
+  --color-categoryFive: #EAB308;
+
+  --chart-income-light: rgba(16, 185, 129, 0.1);
+  --color-category: #1D4ED8;
+
+  --color-category1-text: #7E22CE;
+  --color-category2-text: #A16207;
+  --color-category3-text: #C2410C;
+
+  --color-category4-fill: #DBEAFE;
+  --color-category5-fill: #F1F5F9;
+  --color-category-6fill: #F3E8FF;
+
+  /* FIX: remove stray # in rgba */
+  --color-expense-light: rgba(244, 63, 94, 0.1);
+
+  --color-category2-fill: #FEF9C3;
+  --color-category3-fill: #FFEDD5;
 }
 
+/* DARK THEME */
 .dark {
-    --background: #0f172a;         /* Page background (Background Dark) */
-    --foreground: #f8fafc;         /* Primary text */
+  --background: #0f172a;
+  --foreground: #f8fafc;
 
-    --card: #1e293b;               /* Card / surface (Surface Dark) */
-    --card-foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: var(--foreground);
 
-    --secondary: #334155;          /* Secondary surface (nested cards, nav) */
-    --secondary-foreground: #f8fafc;
+  --secondary: #334155;
+  --secondary-foreground: var(--foreground);
 
-    --border: #334155;             /* Border Dark */
-    --input: #0f172a;              /* Input well (can change to #1e293b if desired) */
-    --ring: #10b981;               /* Emerald focus ring still works in dark */
+  --border: #334155;
+  --input: #0f172a;
+  --ring: #10b981;
 
-    --primary: #10b981;
-    --primary-foreground: #0b1c30; /* darker text on emerald if you prefer */
+  --primary: #10b981;
+  --primary-foreground: #0b1c30;
 
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;   /* Text Muted Dark ("Your money, clearly") */
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
 
-    --accent: #334155;
-    --accent-foreground: #f8fafc;
+  --accent: #334155;
+  --accent-foreground: var(--foreground);
 
-    --destructive: #f43f5e;
+  --destructive: #f43f5e;
 
-    --chart-1: #10b981;
-    --chart-2: #f43f5e;
-    --chart-3: #94a3b8;
-    --chart-4: #1e293b;
-    --chart-5: #334155;
+  --chart-1: #10b981;
+  --chart-2: #f43f5e;
+  --chart-3: #94a3b8;
+  --chart-4: #1e293b;
+  --chart-5: #334155;
 
-    --sidebar: #1e293b;
-    --sidebar-foreground: #f8fafc;
-    --sidebar-primary: #10b981;
-    --sidebar-primary-foreground: #0b1c30;
-    --sidebar-accent: #334155;
-    --sidebar-accent-foreground: #f8fafc;
-    --sidebar-border: #334155;
-    --sidebar-ring: #10b981;
+  --sidebar: #1e293b;
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #0b1c30;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: #334155;
+  --sidebar-ring: var(--ring);
 
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --selected-nav-dark-green:#4EDEA3;
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
 
-    --sidebar-fill: #1E293B;
-    --siderbar-border: #475569;
-    --text-small:#94A3B8;
-    --sidebar-selected-text: #4EDEA3;
-    --sidebar-selected-fill: #213145;
-    --sidebar-button-text: #00422B;
-    --sidebar-button-fill: #10B981;
-    --sidebar-border: #475569; /*card fill*/
-    --title-text-color:#F8FAFC;
+  --selected-nav-dark-green: #4EDEA3;
+
+  --sidebar-fill: #1E293B;
+  /* FIX: typo --siderbar-border → consolidate to --sidebar-border above */
+  --text-small: #94A3B8;
+  --sidebar-selected-text: #4EDEA3;
+  --sidebar-selected-fill: #213145;
+  --sidebar-button-text: #00422B;
+  --sidebar-button-fill: #10B981;
+
+  --title-text-color: #F8FAFC;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
 }
-

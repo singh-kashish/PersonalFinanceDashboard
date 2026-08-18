@@ -1,0 +1,16 @@
+@media (min-width: 768px) {
+#app-shell{
+    grid-template-areas: 
+        "sidebar topbar"
+        "sidebar main";
+}
+#header{
+    grid-area: topbar;
+}
+#main{
+    grid-area: main;
+}
+#sidebar{
+    grid-area: sidebar;
+}
+}
