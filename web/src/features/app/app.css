@@ -1,5 +1,6 @@
 @media (min-width: 768px) {
 #app-shell{
+    grid-template-columns: 21.875% 1fr;
     grid-template-areas: 
         "sidebar topbar"
         "sidebar main";

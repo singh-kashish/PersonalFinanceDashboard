@@ -3,7 +3,7 @@ type MainCompTypes = {
 }
 const Main = ({id}:MainCompTypes) =>{
     return (
-        <main id={id} className="border-l">Main</main>
+        <main id={id} className="">Main</main>
     )
 }
 export default Main

@@ -79,7 +79,7 @@
   --color-expense-light: var(--color-expense-light);
   --color-category2-fill: var(--color-category2-fill);
   --color-category3-fill: var(--color-category3-fill);
-
+  --color-green-selected-fill: var(--color-selected-fill);
   /* Dark-mode specific sidebar extras */
   --color-sidebar-selected-fill: var(--sidebar-selected-fill);
   --color-sidebar-button-text: var(--sidebar-button-text);
@@ -179,6 +179,7 @@
 
   --color-category2-fill: #FEF9C3;
   --color-category3-fill: #FFEDD5;
+  --color-selected-fill: rgba(16, 185, 129, 0.2);
 }
 
 /* DARK THEME */
