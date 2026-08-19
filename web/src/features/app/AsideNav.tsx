@@ -34,7 +34,7 @@ export function AsideNav({ id }: AsideNavProps) {
       </div>
 
       {/* Mobile nav: bottom bar, equal width items */}
-      <nav className="mt-auto md:hidden flex flex-row justify-between items-stretch gap-1 px-1 py-1">
+      <nav className="mt-auto md:hidden flex flex-row justify-between items-stretch gap-1 px-1 py-1 border-t">
         {NavItemDetails.map((n) => (
           <MobileNavItem key={n.label} {...n} />
         ))}

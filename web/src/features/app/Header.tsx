@@ -8,7 +8,7 @@ type HeaderProps={
 function Header({id, user}:HeaderProps) {
   console.log(user?.email,user?.name)
   return (
-    <header className="flex justify-between items-center px-4 w-full h-16 border-b border-sidebar-border border-l bg-sidebar-fill" id={id}>
+    <header className="flex justify-between items-center px-4 h-16 w-full border-b border-sidebar-border border-l bg-sidebar-fill" id={id}>
       <div className="w-full">
         <h3 className="text-3xl font-bold text-selected-nav-dark-green ">Flo</h3>
       </div>

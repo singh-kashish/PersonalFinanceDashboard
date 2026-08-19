@@ -1,5 +1,4 @@
 // AppShell.tsx
-import { Outlet, useRouterState } from '@tanstack/react-router';
 import Header from './Header';
 import './app.css'
 import { useAuthStore } from '../auth/store/useAuthStore';

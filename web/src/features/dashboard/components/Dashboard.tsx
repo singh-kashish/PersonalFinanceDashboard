@@ -1,6 +1,10 @@
+import { HeaderTitle } from "./HeaderTitle";
+
 const Dashboard = () =>{
-    return (<div>
-        Dashboard dasfdsf
-    </div>);
+    return (
+        <section className="p-8 flex flex-col justify-start gap-8">
+            <HeaderTitle/>
+        </section>
+    );
 }
 export default Dashboard;
