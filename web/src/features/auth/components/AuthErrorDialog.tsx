@@ -1,9 +1,10 @@
 type AuthErrorDialogProps = {hasFieldErrors:boolean,submitCount:number,title:string,description:string,visible:boolean};
 const AuthErrorDialog = ({hasFieldErrors,submitCount,title,description,visible}:AuthErrorDialogProps) =>{
-    return (
+  console.log(hasFieldErrors,submitCount,visible)  
+  return (
         <>
         {/* Error alert   */}
-          {hasFieldErrors && submitCount>0 && visible && (
+          { submitCount>0 && visible && (
             <div
               className="
                 rounded-lg

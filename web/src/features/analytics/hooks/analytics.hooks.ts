@@ -5,11 +5,11 @@ import type{
 } from '../analytics.types.ts';
 
 export const analyticsKeys = {
-  summary: (q: AnalyticsQueryInput = {}) => ['analytics', 'summary', q] as const,
-  categories: (q: AnalyticsQueryInput = {}) => ['analytics', 'categories', q] as const,
-  monthly: (q: AnalyticsQueryInput = {}) => ['analytics', 'monthly', q] as const,
+  summary: (q: AnalyticsQueryInput = {}) => ['analytics', 'summary',  q.from,q.to,q.type] as const,
+  categories: (q: AnalyticsQueryInput = {}) => ['analytics', 'categories',  q.from,q.to,q.type] as const,
+  monthly: (q: AnalyticsQueryInput = {}) => ['analytics', 'monthly', q.from,q.to,q.type] as const,
   categoryTrends: (q: CategoryTrendsQueryInput = {}) =>
-    ['analytics', 'category-trends', q] as const,
+    ['analytics', 'category-trends', q.category,q.from,q.to] as const,
 };
 
 

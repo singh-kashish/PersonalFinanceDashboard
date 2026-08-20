@@ -7,20 +7,21 @@ import { useEffect } from 'react';
 import { useErrorStore } from '@/features/error/useErrorStore';
 
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions:{
+    queries:{retry:1, staleTime:1000*60*60*60}},
+    
+  },
+);
 
 function RootComponent() {
   const bootstrapAuth = useAuthStore((s)=>s.bootstrapAuthFlow);
   useEffect(()=>{
     void bootstrapAuth()
   },[bootstrapAuth]);
-  const bootstrapAuthFlow = useAuthStore((s) => s.bootstrapAuthFlow);
   const setGlobalError = useErrorStore((s) => s.setGlobalError);
   const clearGlobalError = useErrorStore((s) => s.clearGlobalError);
 
-  useEffect(() => {
-    void bootstrapAuthFlow();
-  }, [bootstrapAuthFlow]);
 
   useEffect(() => {
       const updateFromNavigator = () => {
