@@ -185,7 +185,7 @@ export const monthlyService = async (
     }
   }
 
-  const recentTransactions = await getRecentTransactions(userId, filter, 10);
+  const recentTransactions = await getRecentTransactions(userId, filter, 50);
 
   const monthly = Array.from(map.entries())
     .map(([month, value]) => ({

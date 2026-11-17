@@ -41,9 +41,9 @@ export const normalizeAnalyticsInput = (
 export const getRecentTransactions = async (
   userId: number,
   filter: AnalyticsFilter,
-  limit = 10
+  limit = 50
 ) => {
-  const take = Math.min(Math.max(limit, 5), 15);
+  const take = Math.min(Math.max(limit, 50), 50);
 
   return prisma.transaction.findMany({
     where: {
