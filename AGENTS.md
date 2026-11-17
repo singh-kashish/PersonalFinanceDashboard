@@ -93,3 +93,28 @@ Suggested order of work. Then STOP and wait for the owner's approval.
 4. Realtime updates for workspace members (WebSocket or SSE).
 5. AI assistant (natural-language entry and queries, streaming, tool calling against the existing API).
 6. Stripe subscriptions and webhooks.
+
+## 10. Testing policy (TDD, mandatory)
+
+Workflow for every change: RED (write a failing test, run it, confirm it fails
+for the right reason) → GREEN (smallest change to pass) → REFACTOR (tests stay
+green). Commit the failing test and the fix separately when practical
+(`test: ...` then `feat:` / `fix:`). Never weaken, skip, or delete a test to make
+it pass. If a test seems wrong, explain why and ask first.
+
+Test pyramid and tools:
+
+- Unit (server: Jest; web: Vitest): pure logic, services with mocked I/O, money module, validators, hooks. Fast, no network, no DB.
+- Property-based (fast-check): money math and any parsing/formatting logic.
+- Integration (server: Jest + Supertest): real HTTP stack against the real local Postgres and Redis from docker-compose (never Neon). Cover happy path, validation failure, auth failure, forbidden/cross-user access, and not-found for every route.
+- Component (web: Vitest + React Testing Library + MSW): behavior through the UI (roles, labels), not implementation details. Mock the network with MSW, not by stubbing hooks.
+- End-to-end / feature automation (Playwright): real browser against the real local stack for critical user journeys. Include axe accessibility checks on main pages.
+- Security: dedicated suite (`server/src/tests/security/`) covering authz/IDOR, auth bypass, token tampering and reuse, rate limits, input abuse (SQLi/XSS payloads, oversized bodies, malformed JSON), and error-message leakage. CI also runs dependency audit, secret scanning, and static analysis.
+
+Rules:
+
+- Tests must be deterministic and isolated: each test creates its own data; the DB is reset between test files; no test depends on order, wall-clock time, or the network.
+- Test databases: only `localhost` hosts and database names ending in `_test` are allowed. Test setup must throw otherwise.
+- Coverage thresholds are enforced in CI (start at 80% lines on services and utils, raise over time).
+- Bug fixes start with a regression test that reproduces the bug.
+- Definition of done: typecheck, lint, unit, integration all green locally; e2e green for any user-facing change.
