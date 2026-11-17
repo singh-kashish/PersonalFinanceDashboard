@@ -71,11 +71,68 @@ Suggested order of work. Then STOP and wait for the owner's approval.
 - Use shadcn/ui components and the existing design tokens. Accessible by default: labels, focus states, keyboard navigation, sensible contrast.
 - No `any`. Fix the type instead.
 
-## 7. Git workflow
+## 7. Git and GitHub workflow (mandatory)
 
-- One task per branch (`feat/...`, `fix/...`, `chore/...`). Never commit to `main` directly.
-- Small commits with clear messages (Conventional Commits). Do not bundle refactors with features.
-- Before finishing a task run, in the relevant package: typecheck, lint, tests. Report the results honestly, including failures.
+Model: trunk-based development. `main` is always deployable. One GitHub issue
+becomes one short-lived branch, one pull request, and one squash merge.
+Branches live a day or two, never longer.
+
+### Naming
+
+- Branch: `<type>/<issue-number>-<kebab-slug>`, for example `feat/6-money-module`.
+- Types: `feat`, `fix`, `chore`, `test`, `docs`, `refactor`, `security`.
+- Commits and PR titles: Conventional Commits, `type(scope): imperative subject`,
+  72 characters or fewer. In TDD work, the failing-test commit comes before the
+  implementation commit.
+
+### Start of every task (do these in order)
+
+1. `git status --porcelain` must print nothing. If it does, STOP and tell me.
+2. `git switch main && git pull --ff-only`.
+3. `gh issue view <N>` and read it. If I did not give an issue number, STOP and ask.
+4. Create the linked branch: `gh issue develop <N> --name <type>/<N>-<slug> --base main --checkout`
+   (fallback: `git switch -c <type>/<N>-<slug>`).
+5. `gh issue edit <N> --add-label "status: in-progress"`.
+
+### During the task
+
+- Commit small and often. Push after the first commit and after each milestone
+  (`git push -u origin HEAD`).
+- Never push to `main`. Never force-push except `--force-with-lease` on your own
+  branch. Do not merge `main` into the branch; if `main` moved, `git rebase main`.
+- Stay in scope. If you find extra work, do NOT do it: open a new issue with
+  `gh issue create` (title, type and area labels, short description) and mention
+  it in the PR. `git diff --stat main...HEAD` must show only files relevant to
+  the issue.
+- Each branch starts from the latest `main`. Do not start the next issue until
+  the previous PR is merged, unless I explicitly ask for a stacked PR (then base
+  it on the previous branch and say so in the PR description).
+
+### Finishing a task
+
+1. Run typecheck, lint, and the relevant tests; report the real output.
+2. `git push`.
+3. Open the PR: `gh pr create --base main --title "<conventional title>"` with the
+   body filled in from `.github/pull_request_template.md` (including `Closes #<N>`).
+   Add labels: the issue's type and area labels, plus `agent-generated`.
+4. `gh pr checks --watch` and report the result.
+5. `gh issue edit <N> --remove-label "status: in-progress"` and
+   `gh pr edit --add-label "status: needs-review"`.
+6. Print the PR URL and STOP. Do NOT merge, do NOT close the issue, do NOT
+   delete branches. I review and squash-merge.
+
+### Never do without asking first
+
+`git reset --hard`, `git clean -fd`, `git push --force`, `git branch -D`,
+deleting remote branches, rewriting history on `main`, changing GitHub settings,
+labels, milestones or branch protection, or running `gh` commands that edit
+issues or PRs other than the ones named in this section.
+
+### If a session goes wrong (for the human)
+
+- Throw the work away: `git switch main && git branch -D <branch> && git push origin --delete <branch>`.
+- Recover lost commits: `git reflog`, then `git switch -c rescue <sha>`.
+- Nothing the agent does on a branch can affect `main` until you squash-merge its PR.
 
 ## 8. How to work with the owner
 
@@ -118,3 +175,102 @@ Rules:
 - Coverage thresholds are enforced in CI (start at 80% lines on services and utils, raise over time).
 - Bug fixes start with a regression test that reproduces the bug.
 - Definition of done: typecheck, lint, unit, integration all green locally; e2e green for any user-facing change.
+
+## 11. Design-to-code workflow
+
+Screen designs are generated with an AI design tool and refined in Figma. They are
+direction, not law: some elements may not be buildable with our stack (React,
+Tailwind v4, shadcn/ui, Radix, Recharts). Never invent a design when no reference
+exists; ask for one.
+
+Inputs live in `docs/design/<screen>/`: `reference.png` (plus `mobile.png`,
+`dark.png` if they exist), optional `figma.txt` (link), optional `notes.md`.
+If your tool can read Figma through MCP you may use it, but the PNGs in the repo
+are the source of truth.
+
+Every screen takes TWO sessions.
+
+### Session 1: Fit report (NO code)
+
+Write `docs/design/<screen>/FIT.md` with these sections, then STOP and wait:
+
+1. Purpose and main user flows (3 lines).
+2. Element inventory table: element | implementation (shadcn component, Tailwind
+   pattern, or existing repo component) | fit (Direct / Adapt / New component /
+   Needs dependency / Not feasible) | notes.
+3. Design tokens used (colors, type scale, radius, spacing, shadows) mapped to our
+   existing Tailwind theme and CSS variables; list tokens that are missing.
+4. States: loading, empty, error, disabled, hover, focus, dark mode, long text,
+   many rows. Say which the design covers and which it does not.
+5. Responsive behavior at 375, 768 and 1280 px (what collapses or reflows).
+6. Accessibility problems in the design (contrast ratios, tap target sizes,
+   focus order, missing labels).
+7. For EVERY item not marked Direct: 2 to 3 options, each with pros, cons, effort
+   (S/M/L), dependency or bundle impact, and accessibility impact. Always include a
+   "simplify the design" option. Give a recommendation and why.
+8. Proposed component tree, file list, and test plan.
+9. Questions for the owner.
+
+The owner records choices under a "Decisions" heading at the bottom. If a choice
+adds a dependency or a new pattern, also follow section 12.
+
+### Session 2: Implement (only after the owner's decisions), TDD
+
+- Use shadcn/ui via `npx shadcn@latest add <component>` (allowed; list what you
+  added in the PR). Use only existing Tailwind theme tokens: no arbitrary hex
+  colors, no inline styles, no `!important`. No new UI library, icon set, or font
+  without approval.
+- Keep code in `web/src/features/<feature>/` (components, hooks, api, types).
+  Extract shared components only when used in two places.
+- Tests, written first:
+  - Unit (Vitest): formatters, mappers, view-model builders, Zod schemas.
+  - Component (React Testing Library + user-event): every state from the fit
+    report, interactions, form validation, keyboard operation. Query by role and
+    label. Add an axe check (vitest-axe) per state: zero violations.
+  - Integration (Vitest + RTL + MSW + real router + real QueryClient): page-level
+    flows, i.e. load data, render, filter or mutate, optimistic update and
+    rollback, error handling.
+  - E2E (Playwright): the user journey, plus screenshot tests at 375, 768 and
+    1280 px (and dark mode if designed). Committed snapshots guard against
+    regressions; they are not compared with the AI reference.
+  - jsdom has no layout engine, so do not claim responsive behavior is tested by
+    component tests. Responsive checks belong in Playwright.
+- Finish with `docs/design/<screen>/REVIEW.md`: screenshots of the built screen
+  next to `reference.png` at each breakpoint, and an honest list of deviations
+  and why. The owner reviews that before merging.
+
+## 12. Decision protocol (architecture and design choices)
+
+The owner makes every significant decision. Your job is to give a balanced
+briefing, not to decide.
+
+### When it applies
+
+Stop and brief before implementing anything that is hard to reverse or shapes the
+codebase: data model and tenancy approach, auth and session handling, API style,
+state management, caching, realtime transport, queue choice, error-handling
+strategy, new dependencies, folder structure changes, testing approach, deployment
+target, and similar. Small local choices (naming, a helper function) do not need
+a brief: decide, and mention them in the PR.
+
+### Decision brief (post in chat, wait for the answer)
+
+1. Context and constraints: Flo's stack, solo developer, portfolio scale, deadline.
+2. Options (2 to 4). ALWAYS include the simplest option, including "do nothing
+   yet". Do not favor whatever the code already does. For each option: how it
+   works in two lines, pros, cons, when it is the right choice, cost to reverse
+   later, and how defensible it is in a technical interview.
+3. What a large company would do versus what actually fits Flo. Do not
+   over-engineer for scale we do not have.
+4. Your recommendation and reasoning, the risks, and what new information would
+   change it.
+5. Evidence: say where claims come from. Label "common practice" versus "my
+   judgement", and flag anything you could not verify. Never present a guess as
+   an industry standard.
+
+### After the owner chooses
+
+Record it in `docs/adr/NNNN-kebab-title.md` (copy `docs/adr/0000-template.md`),
+status Accepted, and commit it in the same PR as the implementation. Only then
+implement. If the owner asks to revisit a decision, add a new ADR that supersedes
+the old one instead of editing history.

@@ -12,3 +12,6 @@ server/.env
 .env
 .env.*
 !.env.example
+
+# TanStack Router temp files
+.tanstack/
