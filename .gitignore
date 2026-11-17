@@ -4,3 +4,11 @@ server/.env
 .env
 .gitignore
 .vscode/
+# macOS
+.DS_Store
+**/.DS_Store
+
+# env files
+.env
+.env.*
+!.env.example

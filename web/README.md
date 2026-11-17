@@ -1,73 +1,126 @@
-# React + TypeScript + Vite
+# Flo — Personal Finance Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack personal finance tracker: log income/expenses, browse and filter
+transactions, and view spend analytics (category breakdown, monthly trends).
 
-Currently, two official plugins are available:
+Monorepo with two independently deployable apps:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+PersonalFinanceDashboard/
+├── server/   Node.js + Express + TypeScript API
+└── web/      Vite + React + TypeScript SPA
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Stack
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Server**
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Express 5, TypeScript
+- PostgreSQL via Prisma ORM (6.19.3)
+- Redis (analytics caching)
+- JWT auth: short-lived access token (Bearer header) + rotating refresh
+  token (HttpOnly cookie)
+- Zod for request validation
+- Jest + Supertest for tests
+- Swagger/OpenAPI docs generated from JSDoc route comments
+
+**Web**
+
+- Vite, React 19, TypeScript
+- TanStack Router (file-based routes) + TanStack Query (server state)
+- Zustand (auth state, global error state)
+- Tailwind CSS v4, shadcn/ui, Radix primitives
+- Axios (API client, with request/response interceptors)
+
+## Prerequisites
+
+- Node.js 20+
+- PostgreSQL instance
+- Redis instance
+
+## Getting started
+
+### 1. Server
+
+```bash
+cd server
+npm install
+cp .env.example .env   # set DATABASE_URL, REDIS_URL, JWT secrets, etc.
+npx prisma migrate deploy
+npm run dev             # http://localhost:<port>, ts-node-dev with auto-restart
 ```
+
+Other server scripts:
+
+| Script               | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `npm run dev`        | Dev server with hot reload             |
+| `npm test`           | Run Jest test suite (`--runInBand`)    |
+| `npm run test:watch` | Jest in watch mode                     |
+| `npm run build`      | Compile TypeScript to `dist/`          |
+| `npm start`          | Run compiled server (`dist/server.js`) |
+
+API docs are served via `swagger-ui-express`; route JSDoc lives alongside
+each router (`src/routes/*.routes.ts`).
+
+### 2. Web
+
+```bash
+cd web
+npm install
+cp .env.example .env   # set VITE_API_URL
+npm run dev             # http://localhost:5173
+```
+
+| Script            | Purpose                              |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Vite dev server                      |
+| `npm run build`   | Type-check + production build        |
+| `npm run lint`    | ESLint                               |
+| `npm run preview` | Preview the production build locally |
+
+## API surface
+
+All routes are prefixed with the server's base path (see `VITE_API_URL`).
+
+**Auth** (`/auth`)
+
+| Method | Path               | Auth required  | Notes                                           |
+| ------ | ------------------ | -------------- | ----------------------------------------------- |
+| POST   | `/auth/signup`     | No             | Sets refresh-token cookie, returns access token |
+| POST   | `/auth/login`      | No             | Sets refresh-token cookie, returns access token |
+| GET    | `/auth/me`         | Bearer         | Current user                                    |
+| POST   | `/auth/refresh`    | Refresh cookie | Rotates refresh token, returns new access token |
+| POST   | `/auth/logout`     | Bearer         | Revokes current refresh token                   |
+| POST   | `/auth/logout-all` | Bearer         | Revokes all of the user's refresh tokens        |
+
+**Transactions** (`/transactions`, all Bearer-protected)
+
+| Method | Path                |
+| ------ | ------------------- |
+| POST   | `/transactions`     |
+| GET    | `/transactions`     |
+| GET    | `/transactions/:id` |
+| PATCH  | `/transactions/:id` |
+| DELETE | `/transactions/:id` |
+
+**Analytics** (`/analytics`)
+
+| Method | Path                         |
+| ------ | ---------------------------- |
+| GET    | `/analytics/summary`         |
+| GET    | `/analytics/categories`      |
+| GET    | `/analytics/monthly`         |
+| GET    | `/analytics/category-trends` |
+
+**Health**
+
+| Method | Path      |
+| ------ | --------- |
+| GET    | `/health` |
+
+## Further reading
+
+See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data model, the auth
+design (token rotation, refresh flow, bootstrap state machine), the
+frontend error/circuit-breaker layer, and caching strategy.

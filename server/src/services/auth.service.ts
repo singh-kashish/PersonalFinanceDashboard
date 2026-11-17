@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 
 import prisma from '../infra/prisma';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-// import generateToken from '../utils/generateToken';
 
 import {
   LoginInput,
@@ -193,6 +193,39 @@ export const refreshTokenTransaction = async(token:string)=>{
   return {accessToken,refreshToken};
 }
 
+export async function safeRefreshTokenTransaction(token: string) {
+  try {
+    return await refreshTokenTransaction(token);
+  } catch (err) {
+    // P2028 = Transaction API error: Unable to start a transaction in the given time
+    if (
+      err instanceof PrismaClientKnownRequestError &&
+      err.code === 'P2028'
+    ) {
+      // one quick retry
+      return await refreshTokenTransaction(token);
+    }
+    throw err;
+  }
+}
+
+export async function getNameById(id:number){
+  try{
+    const name = await prisma.user.findFirst({where:{id}});
+    return name?.name;
+  }  catch (err) {
+    // P2028 = Transaction API error: Unable to start a transaction in the given time
+    if (
+      err instanceof PrismaClientKnownRequestError &&
+      err.code === 'P2028'
+    ) {
+      // one quick retry
+      const result = await prisma.user.findFirst({where:{id}});
+      return result?.name;
+    }
+    throw err;
+  }
+}
 
 
 export {
