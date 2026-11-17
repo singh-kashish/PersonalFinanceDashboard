@@ -1,0 +1,31 @@
+name: Bug
+description: Something is broken
+title: "Bug: "
+labels: ["type: fix"]
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The fix must start with a regression test that reproduces this.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [server, web, db, infra, e2e]
+    validations:
+      required: true

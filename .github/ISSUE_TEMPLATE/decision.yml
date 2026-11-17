@@ -1,0 +1,22 @@
+name: Decision
+description: An architecture or design choice that needs a decision brief
+title: "Decision: "
+labels: ["type: decision", "status: needs-decision"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Decision needed
+      description: What has to be decided, and why now?
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Stack, time, cost, skills, things that are already fixed.
+  - type: textarea
+    id: blocked
+    attributes:
+      label: Blocks
+      description: Which issues cannot start until this is decided?
