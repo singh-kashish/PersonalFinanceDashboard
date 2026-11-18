@@ -17,7 +17,7 @@
     "start": "node dist/server.js",
     "db:up": "docker compose -f ../docker-compose.yml up -d",
     "db:down": "docker compose -f ../docker-compose.yml down",
-    "db:test:migrate": "node --env-file=.env.test ./node_modules/.bin/prisma migrate deploy"
+    "db:test:migrate": "ts-node src/tests/setup/migrateTestDatabase.ts"
   },
   "keywords": [],
   "author": "",

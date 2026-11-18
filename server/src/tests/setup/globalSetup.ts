@@ -1,29 +1,18 @@
-import { execSync } from "child_process";
 import path from "path";
-import { assertTestDatabase } from "./testDbGuard";
+import dotenv from "dotenv";
 import { assertTestRedis } from "./testRedisGuard";
+import { migrateTestDatabase } from "./migrateTestDatabase";
 
 /**
  * Jest globalSetup for the integration project.
  *
  * Runs once before any test file:
- *  1. Loads .env.test so DATABASE_URL points to the local test DB.
- *  2. Validates DATABASE_URL and REDIS_URL with test guards.
- *  3. Applies migrations with `prisma migrate deploy`.
+ *  1. Loads .env.test and validates REDIS_URL with test guard.
+ *  2. Applies migrations with migrateTestDatabase() (which runs assertTestDatabase).
  */
 export default async function globalSetup(): Promise<void> {
-  // Load test environment variables
-  const dotenv = await import("dotenv");
-  dotenv.config({ path: path.resolve(__dirname, "../../../.env.test") });
-
-  const dbUrl = process.env["DATABASE_URL"];
-  if (!dbUrl) {
-    throw new Error(
-      "DATABASE_URL is not set. Copy server/.env.test.example to server/.env.test"
-    );
-  }
-
-  assertTestDatabase(dbUrl);
+  const envPath = path.resolve(__dirname, "../../../.env.test");
+  dotenv.config({ path: envPath, override: true });
 
   const redisUrl = process.env["REDIS_URL"];
   if (!redisUrl) {
@@ -34,10 +23,6 @@ export default async function globalSetup(): Promise<void> {
 
   assertTestRedis(redisUrl);
 
-  // Run migrations against the test database
-  execSync("npx prisma migrate deploy", {
-    cwd: path.resolve(__dirname, "../../.."),
-    env: { ...process.env, DATABASE_URL: dbUrl },
-    stdio: "inherit",
-  });
+  // Validates DATABASE_URL and executes prisma migrate deploy
+  migrateTestDatabase({ envPath });
 }
