@@ -1,8 +1,9 @@
 // utils/jwt.ts
 
-import jwt, { SignOptions } from 'jsonwebtoken';
-import { JwtPayload } from '../validators/auth.validator';
-import { env } from '../config/env';
+import crypto from "crypto";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { JwtPayload } from "../validators/auth.validator";
+import { env } from "../config/env";
 
 export const generateAccessToken = (
   payload: JwtPayload
@@ -23,8 +24,8 @@ export const generateRefreshToken = (
     payload,
     env.JWT_REFRESH_SECRET,
     {
-      expiresIn:
-        env.JWT_REFRESH_EXPIRES, 
+      expiresIn: env.JWT_REFRESH_EXPIRES,
+      jwtid: crypto.randomUUID(),
     } as SignOptions
   );
 };
