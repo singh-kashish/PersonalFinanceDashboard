@@ -119,8 +119,11 @@ guard test proves a Neon-style URL is rejected.
 3. Read the agent's plan. Correct it before approving. Push back on scope creep.
 4. The agent works test-first and opens a PR. You review the diff, line by line for money,
    auth, migrations and anything tenancy-related. Ask it to explain anything you could not
-   explain in an interview.
-5. CI green, then squash-merge: `gh pr merge <N> --squash`. (The branch auto-deletes.)
+   explain in an interview. Also check: `git log --oneline origin/main..HEAD` shows small,
+   atomic, conventional commits; any memoization or optimization has a stated measurement;
+   every effect with a timer, listener or request has cleanup and a test.
+5. CI green, then merge: `gh pr merge <N> --rebase` (every atomic commit lands on main;
+   use `--squash` only for a messy branch). The branch auto-deletes.
 6. `git switch main && git pull --ff-only`, then the next issue.
 
 If a session goes wrong: `git switch main && git branch -D <branch>` and start again.
@@ -164,14 +167,16 @@ brief, ask follow-up questions, choose, and make the agent record an ADR in the 
 Do not let the agent pick for you, and do not pick something you could not defend in an
 interview.
 
-## 7. Milestone M3: Polish and deploy (P13, P14)
+## 7. Milestone M3: Polish and deploy (P13, P16, P17, P14)
 
-P13 is dashboard, analytics and settings, each through D1 and D2. P14 is deploy: run prompt R
-for hosting first (frontend host, API host, managed Postgres and Redis), then deploy,
-smoke-test the live URL, and finalize the README (architecture diagram, screenshots, how to
-run each test suite, security measures).
+P13 is dashboard, analytics and settings, each through D1 and D2. Then P16: a decision brief
+(prompt R) for hosting and environments; you choose and the ADR is recorded. Then P17: the
+CI/CD pipelines (dev auto-deploys from main, production is gated and promotes the same build,
+migrations run as a release step, smoke tests after every deploy, rollback documented in
+docs/DEPLOYMENT.md). P14 last: README, architecture docs, screenshots, performance numbers.
 
-Done when: a public URL works end to end, README is interview-ready, and Architecture-Design.md
+Done when: a public URL works end to end, a merge to main reaches dev automatically, a tagged
+release reaches production after approval, README is interview-ready, and Architecture-Design.md
 matches the code.
 
 ## 8. Milestone M4: Workspaces (P15)
