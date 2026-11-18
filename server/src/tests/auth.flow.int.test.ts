@@ -13,6 +13,14 @@ describe('Complete auth flow', () => {
   let refreshCookie: string = '';
 
   afterAll(async () => {
+    await prisma.refreshToken.deleteMany({
+      where: {
+        user: {
+          email: payload.email,
+        },
+      },
+    });
+
     await prisma.user.deleteMany({
       where: {
         email: payload.email
@@ -107,6 +115,10 @@ describe('Complete auth flow', () => {
     const response =
       await request(app)
         .post('/auth/logout')
+        .set(
+          'Authorization',
+          `Bearer ${accessToken}`
+        )
         .set(
           'Cookie',
           refreshCookie
