@@ -74,16 +74,37 @@ Suggested order of work. Then STOP and wait for the owner's approval.
 ## 7. Git and GitHub workflow (mandatory)
 
 Model: trunk-based development. `main` is always deployable. One GitHub issue
-becomes one short-lived branch, one pull request, and one squash merge.
-Branches live a day or two, never longer.
+becomes one short-lived branch and one pull request. PRs are merged with
+rebase-and-merge, so every atomic commit lands on `main` (squash only when the
+owner asks, for a messy branch). Branches live a day or two, never longer.
 
 ### Naming
 
 - Branch: `<type>/<issue-number>-<kebab-slug>`, for example `feat/6-money-module`.
 - Types: `feat`, `fix`, `chore`, `test`, `docs`, `refactor`, `security`.
 - Commits and PR titles: Conventional Commits, `type(scope): imperative subject`,
-  72 characters or fewer. In TDD work, the failing-test commit comes before the
-  implementation commit.
+  72 characters or fewer.
+
+### Commits: small, atomic, always green
+
+- One commit is one logical change (one behavior, one refactor, one migration),
+  usually 20 to 300 changed lines, and it includes its own tests.
+- Every commit must pass typecheck, lint and the tests, so `main` stays bisectable.
+  In TDD, watch the test fail locally (red), then commit the test and its
+  implementation together once green. Never commit a deliberately failing test alone.
+- Add a 1 to 4 line body when the reason is not obvious: explain why, not what.
+- Never use "wip", "fix", "update", "misc", or commits that mix unrelated changes,
+  and never one giant commit for a whole task. If a task needs more than about 10
+  commits or 600 changed lines, stop and propose splitting the issue.
+- Example for a money module: `feat(money): add parseMoney with validation and tests`,
+  then `feat(money): add add/subtract/sum with property tests`, then
+  `feat(money): add percentage with explicit rounding`, then
+  `docs(adr): record money storage decision`.
+- To fix a mistake in an earlier commit: `git commit --fixup <sha>`, then
+  `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash origin/main`, then
+  `git push --force-with-lease` (own branch only).
+- Before opening the PR, run `git log --oneline origin/main..HEAD` and include the
+  list in your report.
 
 ### Start of every task (do these in order)
 
@@ -96,30 +117,39 @@ Branches live a day or two, never longer.
 
 ### During the task
 
-- Commit small and often. Push after the first commit and after each milestone
-  (`git push -u origin HEAD`).
+- Commit as you complete each logical change. Push after the first commit and after
+  each milestone (`git push -u origin HEAD`).
 - Never push to `main`. Never force-push except `--force-with-lease` on your own
-  branch. Do not merge `main` into the branch; if `main` moved, `git rebase main`.
+  branch. Do not merge `main` into the branch; if `main` moved, `git rebase origin/main`.
 - Stay in scope. If you find extra work, do NOT do it: open a new issue with
   `gh issue create` (title, type and area labels, short description) and mention
-  it in the PR. `git diff --stat main...HEAD` must show only files relevant to
-  the issue.
-- Each branch starts from the latest `main`. Do not start the next issue until
-  the previous PR is merged, unless I explicitly ask for a stacked PR (then base
-  it on the previous branch and say so in the PR description).
+  it in the PR. `git diff --stat origin/main...HEAD` must show only files relevant
+  to the issue.
+- Each branch starts from the latest `main`. Do not start the next issue until the
+  previous PR is merged, unless I explicitly ask for a stacked PR (then base it on
+  the previous branch and say so in the PR description).
 
 ### Finishing a task
 
-1. Run typecheck, lint, and the relevant tests; report the real output.
-2. `git push`.
-3. Open the PR: `gh pr create --base main --title "<conventional title>"` with the
+1. Run the full typecheck, lint and tests; report the real output.
+2. Bring the branch up to date and prove every commit is green, in one step:
+   `git fetch origin && git rebase origin/main --exec "<fast checks>"`, where the fast
+   checks are typecheck plus unit tests for the packages you touched (for example
+   `npm --prefix server run typecheck && npm --prefix server run test:unit`). If a
+   commit fails, fix it with `git commit --fixup <sha>` and
+   `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash origin/main`, then repeat.
+   Never run `git pull origin main` or merge `main` into the branch: the branch must
+   stay a straight line of commits on top of the latest `main`.
+3. `git push --force-with-lease -u origin HEAD` (own branch only).
+4. Open the PR: `gh pr create --base main --title "<conventional title>"` with the
    body filled in from `.github/pull_request_template.md` (including `Closes #<N>`).
+   The PR's Commits tab must show exactly the commits that will land on `main`.
    Add labels: the issue's type and area labels, plus `agent-generated`.
-4. `gh pr checks --watch` and report the result.
-5. `gh issue edit <N> --remove-label "status: in-progress"` and
+5. `gh pr checks --watch` and report the result.
+6. `gh issue edit <N> --remove-label "status: in-progress"` and
    `gh pr edit --add-label "status: needs-review"`.
-6. Print the PR URL and STOP. Do NOT merge, do NOT close the issue, do NOT
-   delete branches. I review and squash-merge.
+7. Print the PR URL and the commit list, then STOP. Do NOT merge, do NOT close the
+   issue, do NOT delete branches. I review and merge (rebase-and-merge).
 
 ### Never do without asking first
 
@@ -132,7 +162,7 @@ issues or PRs other than the ones named in this section.
 
 - Throw the work away: `git switch main && git branch -D <branch> && git push origin --delete <branch>`.
 - Recover lost commits: `git reflog`, then `git switch -c rescue <sha>`.
-- Nothing the agent does on a branch can affect `main` until you squash-merge its PR.
+- Nothing the agent does on a branch can affect `main` until you merge its PR.
 
 ## 8. How to work with the owner
 
@@ -155,8 +185,8 @@ issues or PRs other than the ones named in this section.
 
 Workflow for every change: RED (write a failing test, run it, confirm it fails
 for the right reason) → GREEN (smallest change to pass) → REFACTOR (tests stay
-green). Commit the failing test and the fix separately when practical
-(`test: ...` then `feat:` / `fix:`). Never weaken, skip, or delete a test to make
+green). Commit each behavior as one atomic commit containing its test and its
+implementation (see section 7); never commit a deliberately failing test on its own. Never weaken, skip, or delete a test to make
 it pass. If a test seems wrong, explain why and ask first.
 
 Test pyramid and tools:
@@ -274,3 +304,113 @@ Record it in `docs/adr/NNNN-kebab-title.md` (copy `docs/adr/0000-template.md`),
 status Accepted, and commit it in the same PR as the implementation. Only then
 implement. If the owner asks to revisit a decision, add a new ADR that supersedes
 the old one instead of editing history.
+
+## 13. Frontend architecture, performance and leak rules
+
+### 13.1 Separate UI from data and logic
+
+- Components render. They take props and return JSX. No `fetch` or axios calls, no
+  business rules, and no data shaping inside components.
+- Layers: `features/<feature>/api` (plain typed functions) -> TanStack Query hooks
+  (`useTransactions`, mutations) -> feature hooks that combine them with UI logic
+  (`useTransactionsPage`: filters synced to the URL, pagination, derived values,
+  handlers).
+- Pages are thin containers: they call the feature hook and pass plain props to
+  presentational components.
+- Pure logic (formatting, mapping, selectors) lives in plain functions, not in hooks
+  or components.
+- Custom hooks are named `useX`, return a small stable shape, never return JSX, and
+  are tested with `renderHook`. Presentational components are tested through props.
+- Forms: react-hook-form + Zod inside a `useXForm` hook; the component only binds fields.
+- Pass plain data and callbacks as props, not whole query objects.
+- Zustand only for cross-feature UI or session state, always with selectors
+  (`useStore(s => s.x)`), never whole-store subscriptions. Context only for values
+  that change rarely; split contexts that mix fast- and slow-changing values.
+
+### 13.2 Performance: measure first, optimize with evidence
+
+Default to straightforward code without memoization. Add an optimization only when at
+least one of these is true, and state the evidence (numbers or a React Profiler
+observation) in the PR:
+
+- profiling shows a slow or wasteful re-render (typically lists, tables, charts);
+- an expensive computation (large arrays, sorting, grouping) runs on every render;
+- referential stability is required (effect dependencies, context values, props of a
+  memoized child);
+- bundle size or load time exceeds the agreed budget.
+
+Tools by situation:
+- Colocate state low in the tree before reaching for memoization.
+- `useMemo` for expensive derivations. `useCallback` and `React.memo` only together,
+  for stable callbacks passed to a memoized child that actually re-renders often.
+- `useDeferredValue` or `startTransition` for heavy filtering; debounce search inputs
+  (with cleanup).
+- Route-level code splitting and dynamic imports for heavy libraries (charts).
+- Server-side pagination before virtualization; virtualize only lists that must render
+  hundreds of rows.
+- Size images and lazy-load them. Avoid inline object or array literals as props to
+  memoized children.
+- Check whether the React Compiler is enabled in this project (it is an opt-in build
+  plugin). If it is, do not hand-write memoization it already does. If it is not, do
+  not add it without a decision brief (section 12).
+- No "just in case" memoization. Remove memoization that measurements show does nothing.
+- Record bundle size and Lighthouse (Core Web Vitals) results in the README; ask me
+  before adding a CI budget threshold.
+
+### 13.3 No leaks: effects, timers, listeners, requests
+
+- Every `useEffect` that starts something returns a cleanup that stops it:
+  `clearTimeout`, `clearInterval`, `removeEventListener`, `unsubscribe`,
+  `socket.close()`, `eventSource.close()`, observer `disconnect()`.
+- Keep timer ids in refs or inside the effect closure; never leave a timer without a
+  path to clear it. Prefer shared hooks (`useDebouncedValue`, `useTimeout`) that
+  handle cleanup in one place.
+- Requests: let TanStack Query cancel by passing its `signal` to the HTTP client. For
+  ad-hoc requests in effects use `AbortController` and abort in the cleanup. Ignore
+  results of stale async work.
+- No polling with `setInterval`; use `refetchInterval` where needed.
+- Keep React StrictMode on; an effect that breaks when run twice is a bug.
+- ESLint: `react-hooks/rules-of-hooks` and `react-hooks/exhaustive-deps` are errors.
+  Never silence them without a comment explaining why.
+- Module-level singletons (axios interceptors, `refreshQueue`, network listeners) must
+  register once, be removable, and never hold references to component instances.
+  Unbounded module-level arrays, Maps or queues need a cap or a clearing rule.
+- Tests (Vitest) for any hook or component that sets timers, listeners or requests:
+  use fake timers and spies and assert, after unmount, that `vi.getTimerCount()` is 0,
+  `removeEventListener` was called with the same handler, the abort signal was
+  aborted, and no state update or callback runs afterwards.
+- Optional e2e leak check: repeat a navigation or open/close journey many times and
+  assert heap growth stays under a threshold. Ask before adding a dependency for it.
+
+## 14. Backend resource hygiene
+
+- One shared PrismaClient and one Redis client; both closed in a single graceful
+  shutdown handler on SIGTERM and SIGINT. The handler also stops accepting new HTTP
+  connections, stops workers, and clears every timer.
+- Background `setInterval` and `setTimeout` timers are tracked, cleared on shutdown,
+  and `.unref()`'d when they must not keep the process alive.
+- Every event listener has a matching removal or a documented lifetime. Never add a
+  listener per request. Treat `MaxListenersExceededWarning` as a bug.
+- No unbounded in-memory caches or Maps: use Redis with a TTL, or an LRU with a size cap.
+- Streams, file handles, and queue workers or connections are closed in `finally` or
+  on shutdown.
+- Never create Prisma, Redis or HTTP clients per request.
+- Tests: `npm run test:handles` (jest `--detectOpenHandles`) must pass with no open
+  handles; a test starts and stops the app (and workers) and asserts clean shutdown;
+  add a short k6 soak check with a memory readout when features that hold state
+  (realtime, queues) land.
+
+## 15. Environments and deployment rules
+
+- Environments: local (Docker), CI (ephemeral service containers), dev (auto-deployed
+  from `main`), production (gated). Each has its own database, Redis and secrets.
+  Never point dev or local at production data.
+- Build once, deploy many: promote the same image or artifact from dev to production.
+- Secrets live only in GitHub Environments or the host's secret store: never in the
+  repo, logs or PR text. `.env.example` documents variables without values.
+- Migrations run as an explicit release step (`prisma migrate deploy`), never on app
+  start, and must stay backward-compatible with the previous app version so rollback works.
+- Every deploy is followed by a smoke test (health check plus a minimal journey). A
+  failed smoke test means rollback.
+- Never deploy from a laptop. Do not change hosting, secrets or environment settings
+  without a decision brief (section 12) and my approval.
