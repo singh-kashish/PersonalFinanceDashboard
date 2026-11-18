@@ -201,6 +201,7 @@ Test pyramid and tools:
 Rules:
 
 - Tests must be deterministic and isolated: each test creates its own data; the DB is reset between test files; no test depends on order, wall-clock time, or the network.
+- Integration database resets: isolated test suites reset tables in `beforeEach` by default; multi-step journey files named `*.flow.int.test.ts` carry state across sequential steps and reset once in `beforeAll` instead.
 - Test databases: only `localhost` hosts and database names ending in `_test` are allowed. Test setup must throw otherwise.
 - Coverage thresholds are enforced in CI (start at 80% lines on services and utils, raise over time).
 - Bug fixes start with a regression test that reproduces the bug.
