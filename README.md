@@ -35,8 +35,55 @@ PersonalFinanceDashboard/
 ## Prerequisites
 
 - Node.js 20+
-- PostgreSQL instance
-- Redis instance
+- Docker & Docker Compose (for local Postgres & Redis)
+
+## Local development
+
+### 1. Start local services
+
+Start local PostgreSQL (dev on port 5442, test on 5443) and Redis (port 6380):
+
+```bash
+docker compose up -d
+# or: npm --prefix server run db:up
+```
+
+### 2. Configure environment
+
+```bash
+cp server/.env.example server/.env
+cp server/.env.test.example server/.env.test
+```
+
+### 3. Deploy migrations & run
+
+```bash
+cd server
+npm install
+npx prisma migrate deploy
+npm run dev             # http://localhost:3000, ts-node-dev with auto-restart
+```
+
+In a separate terminal, start the web app:
+
+```bash
+cd web
+npm install
+npm run dev             # http://localhost:5173
+```
+
+### 4. Running tests
+
+```bash
+# Unit tests (pure logic, fast, no external services)
+npm --prefix server run test:unit
+
+# Integration tests (requires local test Postgres on 5443 and Redis on 6380)
+npm --prefix server run test:int
+
+# All tests
+npm --prefix server test
+```
 
 ## Getting started
 
@@ -52,13 +99,22 @@ npm run dev             # http://localhost:<port>, ts-node-dev with auto-restart
 
 Other server scripts:
 
-| Script               | Purpose                                |
-| -------------------- | -------------------------------------- |
-| `npm run dev`        | Dev server with hot reload             |
-| `npm test`           | Run Jest test suite (`--runInBand`)    |
-| `npm run test:watch` | Jest in watch mode                     |
-| `npm run build`      | Compile TypeScript to `dist/`          |
-| `npm start`          | Run compiled server (`dist/server.js`) |
+| Script                 | Purpose                                           |
+| ---------------------- | ------------------------------------------------- |
+| `npm run dev`          | Dev server with hot reload                        |
+| `npm run typecheck`    | Type-check TypeScript (`tsc --noEmit`)            |
+| `npm run lint`         | Run ESLint with typescript-eslint & security rules|
+| `npm test`             | Run all Jest tests (`--runInBand`)                 |
+| `npm run test:unit`    | Run unit tests (`*.unit.test.ts`)                 |
+| `npm run test:int`     | Run integration tests (`*.int.test.ts`)           |
+| `npm run test:coverage`| Jest with coverage report                         |
+| `npm run test:handles` | Jest detecting open handles                       |
+| `npm run test:watch`   | Jest in watch mode                                |
+| `npm run build`        | Compile TypeScript to `dist/`                     |
+| `npm start`            | Run compiled server (`dist/server.js`)            |
+| `npm run db:up`        | Start local Docker services                       |
+| `npm run db:down`      | Stop local Docker services                        |
+| `npm run db:test:migrate` | Deploy migrations against the test database   |
 
 API docs are served via `swagger-ui-express`; route JSDoc lives alongside
 each router (`src/routes/*.routes.ts`).
@@ -72,12 +128,13 @@ cp .env.example .env   # set VITE_API_URL
 npm run dev             # http://localhost:5173
 ```
 
-| Script            | Purpose                              |
-| ----------------- | ------------------------------------ |
-| `npm run dev`     | Vite dev server                      |
-| `npm run build`   | Type-check + production build        |
-| `npm run lint`    | ESLint                               |
-| `npm run preview` | Preview the production build locally |
+| Script              | Purpose                              |
+| ------------------- | ------------------------------------ |
+| `npm run dev`       | Vite dev server                      |
+| `npm run typecheck` | Type-check TypeScript (`tsc -b --noEmit`)|
+| `npm run build`     | Type-check + production build        |
+| `npm run lint`      | ESLint                               |
+| `npm run preview`   | Preview the production build locally |
 
 ## API surface
 
