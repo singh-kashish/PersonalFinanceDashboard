@@ -86,16 +86,18 @@ issue "P10: Transactions page"                         "type: feat,area: web,pri
 issue "P11: Add, edit and delete flows"                "type: feat,area: web,priority: p2"           "M2 Transactions"      "P10"
 issue "P12: End-to-end tests with Playwright"          "type: test,area: e2e,priority: p2"           "M2 Transactions"      "P11"
 issue "P13: Dashboard, Analytics and Settings pages"   "type: feat,area: web,priority: p2"           "M3 Polish and deploy" "P12"
-issue "P14: Deploy and portfolio polish"               "type: chore,area: infra,priority: p2"        "M3 Polish and deploy" "P13"
+issue "P14: Portfolio polish and README"               "type: docs,priority: p2"                     "M3 Polish and deploy" "P13, P17"
+issue "P16: Hosting and environments decision"         "type: decision,area: infra,status: needs-decision,priority: p2" "M3 Polish and deploy" "P12"
+issue "P17: CI/CD pipelines: dev auto-deploy, prod gated" "type: chore,area: infra,priority: p2"      "M3 Polish and deploy" "P16, P2"
 issue "P15: Workspaces and RBAC"                       "type: feat,area: server,area: web,area: db"  "M4 Workspaces"        "P1-P14"
 
 # ---------- merge settings: squash only, auto-delete merged branches ----------
 gh repo edit "$REPO" \
   --enable-squash-merge \
+  --enable-rebase-merge \
   --enable-merge-commit=false \
-  --enable-rebase-merge=false \
   --delete-branch-on-merge >/dev/null
-echo "merge settings: squash only, merged branches auto-deleted"
+echo "merge settings: rebase-merge (default) and squash allowed, merge commits off, merged branches auto-deleted"
 
 # ---------- optional: protect main ----------
 if [[ "${1:-}" == "--protect" ]]; then

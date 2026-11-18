@@ -23,3 +23,6 @@ Where should a human read line by line? (money, auth, tenancy, migrations, anyth
 - [ ] README / Architecture-Design.md updated if behavior changed
 - [ ] Screenshots attached for UI changes
 - [ ] Diff contains only changes relevant to the linked issue
+- [ ] Commits are atomic and conventional; each one passes typecheck, lint and tests
+- [ ] Any memoization or optimization is justified with a measurement
+- [ ] Effects with timers, listeners or requests have cleanup and tests
