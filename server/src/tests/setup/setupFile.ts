@@ -1,6 +1,7 @@
 import path from "path";
 import dotenv from "dotenv";
 import { assertTestDatabase } from "./testDbGuard";
+import { assertTestRedis } from "./testRedisGuard";
 
 // Point DOTENV_CONFIG_PATH to server/.env.test before any module loads src/config/env.
 // This guarantees that any subsequent `import "dotenv/config"` inside application code
@@ -18,6 +19,16 @@ if (!dbUrl) {
 
 // Fail fast if someone accidentally pointed at Neon or a non-test DB.
 assertTestDatabase(dbUrl);
+
+const redisUrl = process.env["REDIS_URL"];
+if (!redisUrl) {
+  throw new Error(
+    "REDIS_URL is not set. Copy server/.env.test.example to server/.env.test"
+  );
+}
+
+// Fail fast if someone accidentally pointed at remote or non-test Redis.
+assertTestRedis(redisUrl);
 
 // ---------------------------------------------------------------------------
 // Database isolation convention:
