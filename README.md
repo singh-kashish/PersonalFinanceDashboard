@@ -106,7 +106,8 @@ Other server scripts:
 | `npm run lint`         | Run ESLint with typescript-eslint & security rules|
 | `npm test`             | Run all Jest tests (`--runInBand`)                 |
 | `npm run test:unit`    | Run unit tests (`*.unit.test.ts`)                 |
-| `npm run test:int`     | Run integration tests (`*.int.test.ts`)           |
+| `npm run test:int`     | Run integration tests silently (`--silent --runInBand`) |
+| `npm run test:int:verbose` | Run integration tests with console logs (`--runInBand`) |
 | `npm run test:coverage`| Jest with coverage report                         |
 | `npm run test:handles` | Jest detecting open handles                       |
 | `npm run test:watch`   | Jest in watch mode                                |
