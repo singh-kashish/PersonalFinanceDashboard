@@ -12,8 +12,8 @@ Review every diff. For prompts 4–7 read the code line by line: you must be abl
 
 Workflow for every change: RED (write a failing test, run it, confirm it fails
 for the right reason) → GREEN (smallest change to pass) → REFACTOR (tests stay
-green). Commit the failing test and the fix separately when practical
-(`test: ...` then `feat:` / `fix:`). Never weaken, skip, or delete a test to make
+green). Commit each behavior as one atomic commit containing its test and its
+implementation (see section 7); never commit a deliberately failing test on its own. Never weaken, skip, or delete a test to make
 it pass. If a test seems wrong, explain why and ask first.
 
 Test pyramid and tools:
@@ -41,7 +41,7 @@ Read AGENTS.md and docs/INSPECTION.md first. Follow the Testing policy (TDD:
 red, green, refactor). Your task is GitHub issue #<N>; its spec is the matching
 prompt in docs/PROMPTS.md. Follow the Git and GitHub workflow in AGENTS.md
 section 7 exactly (start from latest main, branch via the issue, open a PR at
-the end, do not merge). Before writing
+the end, do not merge), and sections 13 to 15 wherever they apply. Before writing
 code, show me a short plan listing the files you will touch and the tests you
 will write, then wait for my approval. Keep commits small. Do not touch
 anything outside this task's scope. When done, run typecheck, lint and tests
@@ -75,7 +75,7 @@ Goal: a safe local dev and test environment. Nothing may use the remote Neon dat
    file that (a) throws unless the DB URL host is localhost and the db name ends in
    _test, (b) truncates all tables between test files. Rename existing tests to fit.
 5. Add server scripts: typecheck (tsc --noEmit), lint (set up ESLint with typescript-eslint
-   and eslint-plugin-security), test:unit, test:int, test, test:coverage, db:up, db:down,
+   and eslint-plugin-security), test:unit, test:int, test, test:coverage, test:handles (jest --detectOpenHandles --runInBand), db:up, db:down,
    db:test:migrate. Add the same typecheck script to web.
 6. Update README with a "Local development" section (docker compose up -d, migrate, run).
 Tests for this task: a test proving the setup guard throws for a Neon-style URL and
@@ -91,7 +91,9 @@ service containers, coverage upload as artifact) and web (typecheck, lint, test,
 build). Add a separate security job: npm audit --audit-level=high for both packages,
 gitleaks secret scan, and CodeQL for JavaScript/TypeScript. Use Node LTS with npm
 caching. Pin action versions. Do not add secrets; CI must run with only local
-service containers. Add a CI status badge to README.
+service containers. Add a CI status badge to README. Also add checks that the PR title and every commit
+message follow Conventional Commits (for example amannn/action-semantic-pull-request and
+wagoid/commitlint-github-action, or equivalents; pin versions).
 ```
 
 ### 3. Backend bug fixes (branch: fix/backend-bugs)
@@ -200,6 +202,13 @@ reject the most common passwords via a small denylist), set explicit cookie flag
    offline/server-unreachable circuit breaker store.
 5. Move the access token out of localStorage into memory only (bootstrap from the
    refresh cookie on load). Update tests accordingly.
+6. ESLint: set react-hooks/rules-of-hooks and react-hooks/exhaustive-deps to error.
+   Keep React StrictMode on.
+7. Leak audit (AGENTS.md section 13.3): review networkStatus.ts, refreshQueue.ts,
+   apiClient.ts, useAuthStore.ts and every useEffect, timer and listener in web/src
+   for missing cleanup. For each leak found, write a failing test first (fake timers,
+   listener spies, abort signals, unmount checks), then fix it. Report anything
+   suspicious you could not confirm.
 ```
 
 ### 9. Transactions API layer and hooks (branch: feat/web-transactions-data)
@@ -264,16 +273,16 @@ states. Tests first for data-to-chart mapping helpers and page states, plus exte
 the Playwright suite with the dashboard and analytics journeys.
 ```
 
-### 14. Deploy and portfolio polish (branch: chore/deploy-docs)
+### 14. Portfolio polish and README (branch: chore/docs-polish)
 
 ```text
-Prepare production deploy: Dockerfile for the server (multi-stage, non-root user,
-healthcheck), environment validation, a production build of web, and a deploy
-guide in README for [fill in: Render/Railway/Fly + Vercel/Netlify/S3+CloudFront].
-Update README: feature list, screenshots placeholder list, architecture diagram
-(Mermaid), test pyramid and how to run each suite, security measures, and fix the
-broken ARCHITECTURE.md link. Update Architecture-Design.md so every claim matches
-the code (especially the money section).
+Make the repository interview-ready. Update README: feature list, screenshots,
+architecture diagram (Mermaid), the test pyramid and how to run each suite, the
+environments and CI/CD flow (link the ADRs and docs/DEPLOYMENT.md), security measures,
+performance notes (bundle size, Lighthouse/Core Web Vitals numbers and the commands
+used), and fix the broken ARCHITECTURE.md link. Update Architecture-Design.md so every
+claim matches the code, especially the money section. Check every command in the README
+works from a clean clone. Do not change application code.
 ```
 
 ### 15. Workspaces and RBAC (branch: feat/workspaces) — start only after 1–14
@@ -289,6 +298,46 @@ isolation suite proving user A cannot read, update, delete, or aggregate
 workspace B's data across ALL routes (including analytics and cache keys), role
 enforcement (VIEWER cannot write, MEMBER cannot invite, ADMIN cannot remove the
 OWNER), invitation expiry and single use, and e2e invite-and-accept flow.
+```
+
+### 16. Hosting and environments decision (branch: docs/16-hosting-adr)
+
+```text
+Decision needed: where and how do we run Flo's environments? Use prompt R (AGENTS.md
+section 12). Environments: local (Docker), CI (ephemeral), dev (auto-deployed from
+main), prod (gated). Compare 2 to 4 combinations for: web host, API host, Postgres
+(note whether Neon branching can give dev and prod separate databases), and Redis.
+Constraints: free or very low cost, users in India (check available regions and
+latency), cold starts and sleeping free tiers, custom domain and HTTPS, secrets
+management, rollback ease, and fit with a GitHub Actions pipeline. State which
+pricing or limits you could not verify. Include the simplest option. Do not write
+code. After I choose, write the ADR only.
+```
+
+### 17. CI/CD pipelines: dev auto-deploy, prod gated (branch: chore/17-cd-pipeline)
+
+```text
+Implement the pipeline from the accepted hosting ADR.
+1. Server Dockerfile: multi-stage, non-root user, healthcheck. Build the image once in
+   CI, push to GHCR tagged with the commit SHA, and promote the same artifact from dev
+   to prod.
+2. GitHub Environments `dev` and `production`, each with its own secrets and variables
+   (DATABASE_URL, REDIS_URL, JWT secrets, ...). Nothing secret in the repo or logs.
+3. Workflows: ci.yml stays the PR gate. deploy-dev.yml runs on pushes to main after CI
+   passes. deploy-prod.yml runs on a version tag (v*.*.*) or manual dispatch and needs
+   approval on the `production` environment (if the repo plan does not support required
+   reviewers, use workflow_dispatch plus a documented checklist). Use concurrency
+   groups so deploys never overlap.
+4. Migrations: `prisma migrate deploy` as a separate release step before the new version
+   takes traffic, never on app start. Document the rollback story (backward-compatible
+   migrations, redeploying the previous image).
+5. Post-deploy smoke test: /health plus a small Playwright subset against the deployed
+   environment. A failed smoke test fails the deploy and triggers the documented rollback.
+6. Releases: GitHub Releases with generated notes from version tags.
+7. Dependabot for npm and GitHub Actions; pin third-party actions to full commit SHAs.
+Write docs/DEPLOYMENT.md (environments, promotion, rollback, secrets, failed-deploy
+runbook). Tests: actionlint passes on all workflows, the smoke script has its own
+tests, and show a dry run of each workflow.
 ```
 
 ---
@@ -344,5 +393,7 @@ unverified). Do not write any code. I will choose; then record it as an ADR.
 - Realtime: SSE versus WebSockets (versus polling).
 - Queue: BullMQ on Redis versus a Postgres-based queue.
 - Sharing types and Zod schemas between server and web.
-- Hosting and deployment targets.
+- Hosting and deployment targets (issue P16).
+- React Compiler versus manual memoization.
+- Error and performance monitoring once deployed.
 - AI assistant design: tool calling against the API versus text-to-SQL (strongly prefer the former; ask for a brief).
