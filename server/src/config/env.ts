@@ -2,14 +2,15 @@ import "dotenv/config";
 import { z } from "zod";
 
 const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(3000),
-  REDIS_URL:z.url(),
+  REDIS_URL: z.url(),
   DATABASE_URL: z.url(),
-  JWT_ACCESS_SECRET:z.string().min(30),
-  JWT_REFRESH_SECRET:z.string().min(30),
-  JWT_ACCESS_EXPIRES:z.string(),
-  JWT_REFRESH_EXPIRES:z.string(),
-  FRONTEND_URL:z.string().default('http://localhost:5173')
+  JWT_ACCESS_SECRET: z.string().min(30),
+  JWT_REFRESH_SECRET: z.string().min(30),
+  JWT_ACCESS_EXPIRES: z.string(),
+  JWT_REFRESH_EXPIRES: z.string(),
+  FRONTEND_URL: z.string().default("http://localhost:5173"),
 });
 
 const parsedEnv =
