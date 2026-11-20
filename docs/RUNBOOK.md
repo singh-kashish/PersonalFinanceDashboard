@@ -35,61 +35,66 @@ review the agent's work or set it up by hand.
 
 ```yaml
 services:
-  postgres:
+  postgres-dev:
     image: postgres:16-alpine
-    container_name: flo-postgres
+    container_name: flo-postgres-dev
+    ports:
+      - "5442:5432"
     environment:
       POSTGRES_USER: flo
-      POSTGRES_PASSWORD: flo_local_password
+      POSTGRES_PASSWORD: flo_local
       POSTGRES_DB: flo_dev
-    ports: ["5442:5432"]
-    volumes: ["flo_pgdata:/var/lib/postgresql/data"]
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U flo -d flo_dev"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 5
 
   postgres-test:
     image: postgres:16-alpine
     container_name: flo-postgres-test
+    ports:
+      - "5443:5432"
     environment:
       POSTGRES_USER: flo
-      POSTGRES_PASSWORD: flo_test_password
+      POSTGRES_PASSWORD: flo_local
       POSTGRES_DB: flo_test
-    ports: ["5443:5432"]
-    tmpfs: ["/var/lib/postgresql/data"]
+    tmpfs:
+      - /var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U flo -d flo_test"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: flo-redis
-    ports: ["6380:6379"]
+    ports:
+      - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 5
 
 volumes:
-  flo_pgdata:
+  pgdata-dev:
 ```
 
 `server/.env` (never commit; keep Neon credentials out of it):
 
 ```
-DATABASE_URL="postgresql://flo:flo_local_password@localhost:5442/flo_dev"
+DATABASE_URL="postgresql://flo:flo_local@localhost:5442/flo_dev"
 REDIS_URL="redis://localhost:6380"
 ```
 
 `server/.env.test` (never commit):
 
 ```
-DATABASE_URL="postgresql://flo:flo_test_password@localhost:5443/flo_test"
+DATABASE_URL="postgresql://flo:flo_local@localhost:5443/flo_test"
 REDIS_URL="redis://localhost:6380"
 ```
 
@@ -100,7 +105,7 @@ docker compose up -d                  # start everything
 docker compose ps                     # wait until all show "healthy"
 cd server
 npx prisma migrate deploy             # apply migrations to the dev DB
-docker compose exec postgres psql -U flo -d flo_dev -c '\dt'   # tables exist?
+docker compose exec postgres-dev psql -U flo -d flo_dev -c '\dt'   # tables exist?
 npm run test                          # should hit ONLY the test DB (port 5443)
 docker compose down                   # stop, keep dev data
 docker compose down -v                # stop and WIPE dev data (local only)

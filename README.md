@@ -79,11 +79,20 @@ npm run dev             # http://localhost:5173
 npm --prefix server run test:unit
 
 # Integration tests (requires local test Postgres on 5443 and Redis on 6380)
+# Runs silently by default; run test:int:verbose to view logs
 npm --prefix server run test:int
+npm --prefix server run test:int:verbose
 
 # All tests
 npm --prefix server test
 ```
+
+#### Test conventions
+
+- **Unit tests** (`*.unit.test.ts`): Pure logic and mocked dependencies. Fast, no network, no database.
+- **Integration tests** (`*.int.test.ts`): Exercise Express endpoints against the local PostgreSQL test instance (`flo_test` on port 5443) and test Redis (port 6380). Tables are truncated in `beforeEach` between tests.
+- **Sequential journey tests** (`*.flow.int.test.ts`): Multi-step integration flows that carry session state across sequential steps; tables are truncated once in `beforeAll`.
+- **Database and Redis guards**: Test setup verifies that `DATABASE_URL` points to `localhost`/`127.0.0.1` with a `_test` database name, and `REDIS_URL` points to port `6380`.
 
 ## Getting started
 
