@@ -5,12 +5,34 @@ import prisma from '../infra/prisma';
 import { toNumber } from '../utils/decimal';
 import {
   normalizeAnalyticsInput,
-  getRecentTransactions,
+  clampRecentLimit,
   normalizeTrendsInput,
 } from '../utils/analytics.utils';
 import { Prisma } from '../generated/prisma';
+import { TransactionType } from '../generated/prisma';
 import {
   getSummaryCache,setSummaryCache,getCategoryCache,setCategoryCache,getMonthlyCache,setMonthlyCache,getCategoryTrendsCache,setCategoryTrendsCache} from '../utils/redis/analyticsCache';
+
+const getRecentTransactions = async (
+  userId: number,
+  filter: { from: Date; to: Date; type?: TransactionType },
+  limit?: number
+) => {
+  const take = clampRecentLimit(limit);
+
+  return prisma.transaction.findMany({
+    where: {
+      userId,
+      date: {
+        gte: filter.from,
+        lte: filter.to,
+      },
+      ...(filter.type && { type: filter.type }),
+    },
+    orderBy: { date: 'desc' },
+    take,
+  });
+};
 
 // SUMMARY
 export const summaryService = async (
