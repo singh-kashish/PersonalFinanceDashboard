@@ -1,5 +1,7 @@
 # Flo — Personal Finance Dashboard
 
+[![CI](https://github.com/singh-kashish/PersonalFinanceDashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/singh-kashish/PersonalFinanceDashboard/actions/workflows/ci.yml)
+
 A full-stack personal finance tracker: log income/expenses, browse and filter
 transactions, and view spend analytics (category breakdown, monthly trends).
 
