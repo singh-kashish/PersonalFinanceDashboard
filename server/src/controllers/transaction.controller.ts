@@ -10,6 +10,7 @@ import {
 
 import { sendSuccess } from '../utils/sendSuccess';
 import { asyncHandler } from '../utils/asyncHandler';
+import { serializeTransaction, serializeTransactions } from '../utils/transaction.serializer';
 
 const postTransaction = asyncHandler(async (
   req,res)=> {
@@ -18,7 +19,7 @@ const postTransaction = asyncHandler(async (
         req.validated?.body as CreateTransactionInput,
         req.auth.userId
       );
-    sendSuccess(res,201,transaction,'Transaction added')
+    sendSuccess(res,201,serializeTransaction(transaction),'Transaction added')
 });
 
 const getTransaction = asyncHandler(async(req,res)=>{
@@ -28,7 +29,7 @@ const getTransaction = asyncHandler(async(req,res)=>{
         id ,
         req.auth.userId
       );
-    sendSuccess(res,200,transaction)
+    sendSuccess(res,200,serializeTransaction(transaction))
 });
 
 const getTransactions =
@@ -43,7 +44,10 @@ asyncHandler(async(req,res)=>{
     sendSuccess(
       res,
       200,
-      result
+      {
+        ...result,
+        transactions: serializeTransactions(result.transactions),
+      }
     );
 
 });
@@ -58,12 +62,12 @@ const updateTransaction = asyncHandler(
         req.auth.userId,
         req.validated?.body as UpdateTransactionInput
       );
-    sendSuccess(res,200,updatedTransaction)
+    sendSuccess(res,200,serializeTransaction(updatedTransaction))
 });
 
 const deleteTransaction = asyncHandler(async (
   req,res
-)=> {
+)=>{ 
     const {id} =  req.validated?.params as TransactionIdType;
     await deleteTransactionService(
        id,
