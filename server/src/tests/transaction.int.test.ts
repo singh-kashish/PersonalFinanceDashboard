@@ -52,7 +52,7 @@ describe('Transaction integration tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.data).toBeDefined();
       expect(response.body.data.id).toBe(transactionId);
-      expect(response.body.data.amount).toBe('200');
+      expect(response.body.data.amount).toBe('200.00');
       expect(response.body.data.description).toBe('Updated');
     });
 
