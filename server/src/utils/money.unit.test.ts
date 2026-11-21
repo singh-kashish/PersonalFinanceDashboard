@@ -2,11 +2,13 @@ import { Decimal } from "decimal.js";
 import * as fc from "fast-check";
 import {
   add,
+  allocatePercentages,
   compare,
   equals,
   MAX_MONEY,
   MoneyError,
   parseMoney,
+  percentage,
   subtract,
   sum,
   toApiString,
@@ -229,6 +231,77 @@ describe("arithmetic", () => {
       fc.property(moneyString, moneyString, (a, b) => {
         const [x, y] = [money(a), money(b)] as [Decimal, Decimal];
         expect(compare(x, y)).toBe(-compare(y, x) + 0);
+      })
+    );
+  });
+});
+
+describe("percentage", () => {
+  it("rounds half to even by default", () => {
+    // 12.5 -> 12, 37.5 -> 38, 62.5 -> 62 (ties go to the even neighbor)
+    expect(percentage(money("1"), money("8"), 0).toString()).toBe("12");
+    expect(percentage(money("3"), money("8"), 0).toString()).toBe("38");
+    expect(percentage(money("5"), money("8"), 0).toString()).toBe("62");
+  });
+
+  it("honors an explicit rounding mode", () => {
+    expect(percentage(money("1"), money("8"), 0, Decimal.ROUND_HALF_UP).toString()).toBe("13");
+  });
+
+  it("returns 0 when the total is zero", () => {
+    expect(percentage(money("5"), money("0")).toString()).toBe("0");
+  });
+
+  it("computes ordinary percentages", () => {
+    expect(percentage(money("1"), money("3")).toFixed(2)).toBe("33.33");
+    expect(percentage(money("50"), money("50")).toFixed(2)).toBe("100.00");
+  });
+
+  it("stays between 0 and 100 when part <= total", () => {
+    fc.assert(
+      fc.property(moneyString, moneyString, (a, b) => {
+        const [x, y] = [money(a), money(b)] as [Decimal, Decimal];
+        const [part, total] = compare(x, y) <= 0 ? [x, y] : [y, x];
+        const value = percentage(part, total);
+        expect(value.greaterThanOrEqualTo(0) && value.lessThanOrEqualTo(100)).toBe(true);
+      })
+    );
+  });
+});
+
+describe("allocatePercentages", () => {
+  const asStrings = (parts: string[]) =>
+    allocatePercentages(parts.map(money)).map((share) => share.toFixed(2));
+
+  it("hands leftover hundredths to the largest dropped fractions, ties to the earlier item", () => {
+    expect(asStrings(["1", "1", "1"])).toEqual(["33.34", "33.33", "33.33"]);
+    expect(asStrings(["2", "1"])).toEqual(["66.67", "33.33"]);
+  });
+
+  it("handles one part, an empty list, and a zero total", () => {
+    expect(asStrings(["7.25"])).toEqual(["100.00"]);
+    expect(asStrings([])).toEqual([]);
+    expect(asStrings(["0", "0.00"])).toEqual(["0.00", "0.00"]);
+  });
+
+  it("rejects negative parts", () => {
+    expect(() => allocatePercentages([money("-1"), money("2")])).toThrow(
+      expect.objectContaining({ code: "NEGATIVE" })
+    );
+  });
+
+  it("always adds up to exactly 100.00 and stays within one hundredth of the exact share", () => {
+    fc.assert(
+      fc.property(fc.array(moneyString, { minLength: 1, maxLength: 25 }), (texts) => {
+        const parts = texts.map(money);
+        const shares = allocatePercentages(parts);
+        expect(sum(shares).toFixed(2)).toBe("100.00");
+        const total = sum(parts);
+        shares.forEach((share, i) => {
+          const exact = (parts[i] as Decimal).mul(100).div(total);
+          expect(share.greaterThanOrEqualTo(0)).toBe(true);
+          expect(share.minus(exact).abs().lessThanOrEqualTo("0.01")).toBe(true);
+        });
       })
     );
   });
