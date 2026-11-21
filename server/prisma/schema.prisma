@@ -29,7 +29,7 @@ enum TransactionType {
 model Transaction {
   id Int @id @default(autoincrement())
 
-  amount Decimal
+  amount Decimal @db.Decimal(19, 2)
   type   TransactionType
 
   category    String
