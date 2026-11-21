@@ -1,5 +1,4 @@
 // utils/analytics.utils.ts
-import prisma from '../infra/prisma';
 import { AnalyticsQueryInput, categoryTrendsQueryInput } from '../validators/analytics.validator';
 import { TransactionType } from '../generated/prisma'; // adjust path if needed
 
@@ -38,25 +37,12 @@ export const normalizeAnalyticsInput = (
   };
 };
 
-export const getRecentTransactions = async (
-  userId: number,
-  filter: AnalyticsFilter,
-  limit = 50
-) => {
-  const take = Math.min(Math.max(limit, 50), 50);
-
-  return prisma.transaction.findMany({
-    where: {
-      userId,
-      date: {
-        gte: filter.from,
-        lte: filter.to,
-      },
-      ...(filter.type && { type: filter.type }),
-    },
-    orderBy: { date: 'desc' },
-    take,
-  });
+export const clampRecentLimit = (limit?: number): number => {
+  const defaultLimit = 50;
+  const min = 1;
+  const max = 50;
+  const value = limit ?? defaultLimit;
+  return Math.min(Math.max(value, min), max);
 };
 
 export const normalizeTrendsInput = (data:categoryTrendsQueryInput):TrendsFilter =>{
