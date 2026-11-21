@@ -147,17 +147,21 @@
   });
 
   export const logoutAllController = asyncHandler(async(req:Request,res:Response)=>{
-    const userId = req.auth.userId;
+    const userId = req.auth?.userId;
     const refreshToken = req.cookies["refreshToken"];
-    if(refreshToken){
-      const deleted = await deleteAllRefreshTokens(userId);
-      if(deleted.count<=0)throw new AppError("Server issue",400);
-      res.clearCookie(
-        'refreshToken',
-        refreshCookieSignoutOptions
-      );
-      sendSuccess(res,200,null,"Logged out");
+    
+    if(userId){
+      await deleteAllRefreshTokens(userId);
+    } else if(refreshToken){
+      await deleteRefreshToken(refreshToken);
     }
+    
+    res.clearCookie(
+      'refreshToken',
+      refreshCookieSignoutOptions
+    );
+    
+    sendSuccess(res,200,null,"Logged out from all devices");
   })
 
   export {
