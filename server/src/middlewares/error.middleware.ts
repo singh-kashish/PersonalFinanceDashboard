@@ -12,7 +12,7 @@ import AppError from '../utils/AppError';
 
 const errorMiddleware = (
   err: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ): void => {
@@ -20,34 +20,25 @@ const errorMiddleware = (
   console.error(err);
 
   let statusCode = 500;
-  let message =
-    'Internal Server Error';
+  let message = 'Internal server error';
 
   if(err instanceof AppError){
 
-    statusCode =
-      err.statusCode;
+    statusCode = err.statusCode;
+    message = err.message;
 
-    message =
-      err.message;
-
-  }
-
-  else if(err instanceof ZodError){
+  } else if(err instanceof ZodError){
 
     statusCode = 400;
+    message = err.issues[0]?.message ?? 'Validation Error';
 
-    message =
-      err.issues[0]?.message ??
-      'Validation Error';
-
-  }
-
-  else if(err instanceof Error){
-
-    message =
-      err.message;
-
+  } else if(err instanceof Error){
+    // Unexpected error - log server-side, return generic message in production
+    if (process.env.NODE_ENV === 'development') {
+      message = err.message;
+    } else {
+      message = `Internal server error (requestId: ${req.requestId})`;
+    }
   }
 
   res.status(statusCode).json({
