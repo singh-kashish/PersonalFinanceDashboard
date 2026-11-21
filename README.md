@@ -171,6 +171,9 @@ All routes are prefixed with the server's base path (see `VITE_API_URL`).
 | PATCH | `/transactions/:id` |
 | DELETE | `/transactions/:id` |
 
+> **Note:** Transaction amounts are sent and received as decimal strings with exactly 2
+> decimal places (e.g., `"450.75"`). JSON numbers are rejected with HTTP 400.
+
 **Analytics** (`/analytics`)
 | Method | Path |
 |---|---|
