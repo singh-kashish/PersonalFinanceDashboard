@@ -128,3 +128,31 @@ export function toApiString(value: Money): string {
   }
   return value.toFixed(MONEY_SCALE, Decimal.ROUND_HALF_EVEN);
 }
+
+const d = (value: Money): Money => {
+  if (!D.isDecimal(value)) {
+    throw new MoneyError("INVALID_TYPE", "Money must be a Decimal");
+  }
+  return new D(value);
+};
+
+export function add(a: Money, b: Money): Money {
+  return d(a).plus(d(b));
+}
+
+export function subtract(a: Money, b: Money): Money {
+  return d(a).minus(d(b));
+}
+
+/** Sum of a list; the sum of an empty list is zero. */
+export function sum(values: readonly Money[]): Money {
+  return values.reduce<Money>((total, value) => total.plus(d(value)), new D("0"));
+}
+
+export function compare(a: Money, b: Money): -1 | 0 | 1 {
+  return d(a).comparedTo(d(b)) as -1 | 0 | 1;
+}
+
+export function equals(a: Money, b: Money): boolean {
+  return d(a).equals(d(b));
+}
