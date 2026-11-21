@@ -38,7 +38,7 @@ describe('createTransactionService', () => {
 
     const result = await createTransactionService(
       {
-        amount: 100.00,
+        amount: '100.00',
         type: 'EXPENSE',
         category: 'FOOD',
         description: 'Test',
@@ -59,7 +59,7 @@ describe('createTransactionService', () => {
     await expect(
       createTransactionService(
         {
-          amount: 100.00,
+          amount: '100.00',
           type: 'EXPENSE',
           category: 'FOOD',
           description: 'Test',

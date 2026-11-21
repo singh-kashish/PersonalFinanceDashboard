@@ -1,14 +1,35 @@
 import {z} from 'zod'
+import { parseMoney, toApiString, MoneyError } from '../utils/money';
 
 const transactionTypes = [
     'INCOME',
     'EXPENSE',
 ] as const;
 
+const amountSchema = z.string().transform((val, ctx) => {
+  try {
+    const money = parseMoney(val, { allowZero: false, allowNegative: false });
+    return toApiString(money);
+  } catch (err) {
+    if (err instanceof MoneyError) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: err.message,
+      });
+      return z.NEVER;
+    }
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'amount must be a decimal string like "450.75"',
+    });
+    return z.NEVER;
+  }
+});
+
+const optionalAmountSchema = amountSchema.optional();
+
 const createTransactionSchema = z.object({
-    amount: z.coerce
-        .number()
-        .positive('Amount must be greater than 0'),
+    amount: amountSchema,
 
     type: z.enum(transactionTypes),
 
@@ -76,15 +97,9 @@ export const transactionsFilterSchema =
       .trim()
       .optional(),
 
-    minAmount: z.coerce
-      .number()
-      .positive()
-      .optional(),
+    minAmount: amountSchema.optional(),
 
-    maxAmount: z.coerce
-      .number()
-      .positive()
-      .optional(),
+    maxAmount: amountSchema.optional(),
 
     from: z.iso
       .datetime()
@@ -139,10 +154,7 @@ const transactionIdSchema = z.object({
 });
 
 const updateTransactionSchema = z.object({
-    amount: z.coerce
-        .number()
-        .positive()
-        .optional(),
+    amount: optionalAmountSchema,
 
     type: z.enum(transactionTypes)
         .optional(),
