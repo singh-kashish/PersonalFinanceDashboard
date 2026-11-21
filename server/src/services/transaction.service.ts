@@ -122,12 +122,18 @@ export const getTransactionsService = async (
 };
 
 
-const updateTransactionService = async (transactionId: number,userId: number,updateData: UpdateTransactionInput) => {
-  const result = await prisma.transaction.updateMany({
-    where: {
-      id: transactionId,
-      userId,
-    },
+const updateTransactionService = async (transactionId: number, userId: number, updateData: UpdateTransactionInput) => {
+  // First check if transaction exists and belongs to user
+  const existing = await prisma.transaction.findFirst({
+    where: { id: transactionId, userId },
+  });
+
+  if (!existing) {
+    throw new AppError('Transaction not found', 404);
+  }
+
+  const updatedTransaction = await prisma.transaction.update({
+    where: { id: transactionId },
     data: {
       ...(updateData.amount !== undefined && { amount: updateData.amount }),
       ...(updateData.type !== undefined && { type: updateData.type }),
@@ -143,15 +149,11 @@ const updateTransactionService = async (transactionId: number,userId: number,upd
     },
   });
 
-  if (result.count === 0) {
-    throw new AppError('Transaction not found', 404);
-  }
-
   invalidateAnalyticsForUser(userId).catch((err) =>
     console.error('Failed to invalidate analytics cache on update', { userId }, err)
   );
 
-  // If you need the updated row, you can fetch it in a second query
+  return updatedTransaction;
 };
 
 
