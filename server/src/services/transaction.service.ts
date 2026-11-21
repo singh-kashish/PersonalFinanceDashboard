@@ -17,7 +17,7 @@ const createTransactionService = async (
   transactionData: CreateTransactionInput,
   userId: number
 ) => {
-  const result = prisma.transaction.create({
+  const result = await prisma.transaction.create({
     data: {
       amount: transactionData.amount,
 
@@ -35,7 +35,7 @@ const createTransactionService = async (
         : new Date(),
     },
   });
-  // Prisma did not throw => success
+
   invalidateAnalyticsForUser(userId).catch((err) =>
     console.error('Failed to invalidate analytics cache on create', { userId }, err)
   );
