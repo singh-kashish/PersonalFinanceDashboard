@@ -156,3 +156,61 @@ export function compare(a: Money, b: Money): -1 | 0 | 1 {
 export function equals(a: Money, b: Money): boolean {
   return d(a).equals(d(b));
 }
+
+const HUNDRED = new D("100");
+
+/**
+ * part / total as a percentage rounded to `scale` decimals.
+ * Rule: if total is zero the percentage is 0 (never NaN or Infinity).
+ * Rounding is explicit; the default is ROUND_HALF_EVEN.
+ */
+export function percentage(
+  part: Money,
+  total: Money,
+  scale: number = MONEY_SCALE,
+  rounding: Decimal.Rounding = Decimal.ROUND_HALF_EVEN
+): Money {
+  const totalValue = d(total);
+  if (totalValue.isZero()) {
+    return new D("0");
+  }
+  return d(part).mul(HUNDRED).div(totalValue).toDecimalPlaces(scale, rounding);
+}
+
+/**
+ * Splits 100% across non-negative parts so the rounded percentages add up to
+ * exactly 100.00 (largest remainder method).
+ *
+ * Remainder rule: every share is rounded DOWN to `scale` decimals, then the leftover
+ * hundredths are handed out one by one to the shares with the largest dropped
+ * fraction; ties go to the earlier item. If the total is zero every share is 0.
+ */
+export function allocatePercentages(
+  parts: readonly Money[],
+  scale: number = MONEY_SCALE
+): Money[] {
+  const values = parts.map(d);
+  if (values.some((value) => value.isNegative())) {
+    throw new MoneyError("NEGATIVE", "Cannot allocate percentages of negative amounts");
+  }
+  const total = sum(values);
+  if (total.isZero()) {
+    return values.map(() => new D("0"));
+  }
+
+  const unit = new D(10).pow(-scale);
+  const exact = values.map((value) => value.mul(HUNDRED).div(total));
+  const floors = exact.map((share) => share.toDecimalPlaces(scale, Decimal.ROUND_DOWN));
+  const leftoverUnits = HUNDRED.minus(sum(floors)).div(unit).toNumber();
+
+  const byDroppedFraction = exact
+    .map((share, index) => ({ index, dropped: share.minus(floors[index] as Money) }))
+    .sort((x, y) => y.dropped.comparedTo(x.dropped) || x.index - y.index);
+
+  const result = floors.slice();
+  for (let i = 0; i < leftoverUnits; i += 1) {
+    const { index } = byDroppedFraction[i % byDroppedFraction.length] as { index: number };
+    result[index] = (result[index] as Money).plus(unit);
+  }
+  return result;
+}
