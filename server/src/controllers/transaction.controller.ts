@@ -1,4 +1,4 @@
-import {CreateTransactionInput, GetTransactionsInput,UpdateTransactionInput,TransactionType,TransactionIdType} from '../validators/transaction.validator'
+import {CreateTransactionInput, GetTransactionsInput,UpdateTransactionInput,TransactionIdType} from '../validators/transaction.validator'
 
 import {
   createTransactionService,

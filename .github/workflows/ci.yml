@@ -61,10 +61,8 @@ jobs:
         run: npx prisma generate
       - name: Typecheck
         run: npm run typecheck
-      # TODO: make blocking once the issue "fix existing server ESLint errors" is merged.
-      - name: Lint (non-blocking for now)
+      - name: Lint
         run: npm run lint
-        continue-on-error: true
       - name: Create test env file
         run: cp .env.test.example .env.test
       - name: Unit tests

@@ -1,7 +1,6 @@
 import request from 'supertest';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import authRouter from '../routes/auth.routes';
 import { authLimiter } from '../middlewares/rateLimit.middleware';
 
 describe('Auth signup rate limiting', () => {
