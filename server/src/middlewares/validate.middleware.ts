@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, RequestHandler } from "express";
-import {  z, infer as zInfer } from "zod"
+import { z } from "zod"
 import AppError from "../utils/AppError";
 // Middleware Factory(Returning middleware with specific configuration)
 type Source = 'params' | 'body' | 'query'
