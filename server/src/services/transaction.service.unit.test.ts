@@ -5,12 +5,12 @@ let mockInvalidateFn = jest.fn();
 
 jest.mock('../infra/prisma', () => ({
   transaction: {
-    create: (...args: any[]) => mockPrismaCreate(...args),
+    create: (...args: unknown[]) => mockPrismaCreate(...args),
   },
 }));
 
 jest.mock('../utils/redis/analyticsCache', () => ({
-  invalidateAnalyticsForUser: (...args: any[]) => mockInvalidateFn(...args),
+  invalidateAnalyticsForUser: (...args: unknown[]) => mockInvalidateFn(...args),
 }));
 
 import { createTransactionService } from './transaction.service';

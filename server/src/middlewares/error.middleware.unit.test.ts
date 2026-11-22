@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ZodError } from 'zod';
+import { ZodError, ZodIssue } from 'zod';
 import AppError from '../utils/AppError';
 import errorMiddleware from './error.middleware';
 
@@ -32,7 +32,7 @@ describe('errorMiddleware', () => {
 
   it('handles ZodError with 400 and first issue message', () => {
     const zodErr = new ZodError([
-      { code: 'invalid_type', expected: 'string', received: 'number', path: ['field'], message: 'Expected string' } as any,
+      { code: 'invalid_type', expected: 'string', received: 'number', path: ['field'], message: 'Expected string' } as ZodIssue,
     ]);
     errorMiddleware(zodErr, mockReq as Request, mockRes as Response, mockNext);
     

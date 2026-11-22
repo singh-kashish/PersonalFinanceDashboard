@@ -1,16 +1,14 @@
-  import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
-  import {
-    signupService,
-    loginService,
-    createRefreshToken,
-    findRefreshToken,
-    deleteRefreshToken,
-    refreshTokenTransaction,
-    deleteAllRefreshTokens,
-    safeRefreshTokenTransaction,
-    getNameById
-  } from '../services/auth.service';
+import {
+  signupService,
+  loginService,
+  createRefreshToken,
+  deleteRefreshToken,
+  deleteAllRefreshTokens,
+  safeRefreshTokenTransaction,
+  getNameById
+} from '../services/auth.service';
   import {
     SignUpInput,
     LoginInput,
@@ -102,7 +100,7 @@
       if(!refreshToken){
         throw new AppError('No refresh token',401);
       }
-      const payload = verifyRefreshToken(refreshToken);
+      verifyRefreshToken(refreshToken);
       const {accessToken,refreshToken:newRefreshToken} = await safeRefreshTokenTransaction(refreshToken);
       res.cookie(
         'refreshToken',

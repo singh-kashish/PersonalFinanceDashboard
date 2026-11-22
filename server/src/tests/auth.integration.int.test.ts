@@ -11,7 +11,6 @@ describe('Auth integration tests',()=>{
 
   let refreshCookie:string='';
   let userId:number;
-  let accessToken:string='';
 
   beforeAll(async()=>{
 
@@ -24,8 +23,6 @@ describe('Auth integration tests',()=>{
       signupResponse.headers[
         'set-cookie'
       ]!;
-
-    accessToken = signupResponse.body.data.accessToken;
 
     const user =
       await prisma.user.findUnique({
