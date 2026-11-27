@@ -5,7 +5,6 @@ import { useRouter, useRouterState } from '@tanstack/react-router';
 import { useAuthStore } from '../store/useAuthStore';
 import { FloLoginPage } from './AuthCard';
 import { SquareSpin } from '@/components/ui/square-spin';
-import Dashboard from '@/features/dashboard/components/Dashboard'; // whatever your dashboard root is
 import { AppShell } from '@/features/app/AppShell';
 
 interface AuthShellProps {

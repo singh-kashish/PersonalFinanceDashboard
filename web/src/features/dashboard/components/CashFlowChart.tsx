@@ -1,5 +1,5 @@
-import { TrendingUp } from "lucide-react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { TrendingUp } from "lucide-react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import {
   Card,
@@ -8,57 +8,86 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart"
-import type { Transaction } from "../dashboard.types"
+} from "@/components/ui/chart";
+import type { ChartTransaction } from "../dashboard.types";
 
-export const description = "A stacked area chart"
-
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+export const description = "A stacked area chart";
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--chart-1)",
+  income: {
+    label: "Income",
+    color: "var(--color-income)",
   },
-  mobile: {
-    label: "Mobile",
-    color: "var(--chart-2)",
+  expense: {
+    label: "Expense",
+    color: "var(--color-expense)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
+interface CashFlowChartProps {
+  transactions: ChartTransaction[];
+}
 
+export function CashFlowChart({ transactions }: CashFlowChartProps) {
+  // Aggregate transactions by month
+  const monthlyMap = new Map<string, { income: number; expense: number }>();
 
-export function CashFlowChart({transactions}:Transaction[]|[]) {
+  for (const tx of transactions) {
+    const date = new Date(tx.date);
+    const monthKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+
+    if (!monthlyMap.has(monthKey)) {
+      monthlyMap.set(monthKey, { income: 0, expense: 0 });
+    }
+
+    const entry = monthlyMap.get(monthKey)!;
+    const amount = tx.amount; // already a number
+
+    if (tx.type === 'INCOME') {
+      entry.income += amount;
+    } else {
+      entry.expense += amount;
+    }
+  }
+
+  // Convert to array sorted by month
+  const chartData = Array.from(monthlyMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, values]) => ({
+      month,
+      income: values.income,
+      expense: values.expense,
+    }));
+
+  // If no data, show empty state
+  if (chartData.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center text-muted-foreground">
+          No transaction data available
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Area Chart - Stacked</CardTitle>
-        <CardDescription>
-          Showing total visitors for the last 6 months
-        </CardDescription>
+        <CardTitle>Cash Flow</CardTitle>
+        <CardDescription>Monthly income vs expense</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <AreaChart
             accessibilityLayer
             data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12 }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -73,19 +102,19 @@ export function CashFlowChart({transactions}:Transaction[]|[]) {
               content={<ChartTooltipContent indicator="dot" />}
             />
             <Area
-              dataKey="mobile"
+              dataKey="expense"
               type="natural"
-              fill="var(--color-mobile)"
+              fill="var(--color-expense)"
               fillOpacity={0.4}
-              stroke="var(--color-mobile)"
+              stroke="var(--color-expense)"
               stackId="a"
             />
             <Area
-              dataKey="desktop"
+              dataKey="income"
               type="natural"
-              fill="var(--color-desktop)"
+              fill="var(--color-income)"
               fillOpacity={0.4}
-              stroke="var(--color-desktop)"
+              stroke="var(--color-income)"
               stackId="a"
             />
           </AreaChart>
@@ -95,14 +124,14 @@ export function CashFlowChart({transactions}:Transaction[]|[]) {
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <div className="flex items-center gap-2 leading-none font-medium">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+              Income vs Expense <TrendingUp className="h-4 w-4" />
             </div>
             <div className="flex items-center gap-2 leading-none text-muted-foreground">
-              January - June 2024
+              {chartData[0]?.month} - {chartData[chartData.length - 1]?.month}
             </div>
           </div>
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }

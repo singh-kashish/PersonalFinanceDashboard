@@ -24,7 +24,7 @@ export interface ApiSuccess<T> {
 // Adjust fields to match your getRecentTransactions shape
 export interface RecentTransaction {
   id: number;
-  amount: number;
+  amount: string; // API returns string with 2 decimals
   type: AnalyticsType;
   category: string | null;
   date: string; // ISO string
@@ -33,18 +33,18 @@ export interface RecentTransaction {
 
 /** GET /analytics/summary */
 export interface AnalyticsSummary {
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
+  totalIncome: string; // 2-decimal string
+  totalExpense: string;
+  balance: string; // can be negative
   recentTransactions: RecentTransaction[];
 }
 
 /** GET /analytics/categories */
 export interface CategoryAnalyticsItem {
   category: string | null;
-  totalAmount: number;
+  totalAmount: string; // 2-decimal string
   transactionCount: number;
-  percentage: number; // 0–100
+  percentage: string; // 2-decimal string, e.g., "33.33"
 }
 
 export interface CategoryAnalyticsResponse {
@@ -55,9 +55,9 @@ export interface CategoryAnalyticsResponse {
 /** GET /analytics/monthly */
 export interface MonthlyPoint {
   month: string; // YYYY-MM
-  income: number;
-  expense: number;
-  balance: number;
+  income: string; // 2-decimal string
+  expense: string; // 2-decimal string
+  balance: string; // 2-decimal string, can be negative
 }
 
 export interface MonthlyAnalyticsResponse {
@@ -69,7 +69,7 @@ export interface MonthlyAnalyticsResponse {
 export interface CategoryTrendPoint {
   month: string;   // YYYY-MM
   category: string;
-  amount: number;
+  amount: string; // 2-decimal string
 }
 
 export type CategoryTrendsResponse = CategoryTrendPoint[];
