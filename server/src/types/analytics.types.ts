@@ -1,5 +1,3 @@
-// utils/analytics.types.ts
-
 export type AnalyticsFilter = {
   from: Date;
   to: Date;
@@ -11,18 +9,18 @@ export type AnalyticsFilterWithLimit = AnalyticsFilter & {
 };
 
 export type SummaryResult = {
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
+  totalIncome: string;
+  totalExpense: string;
+  balance: string;
   recentTransactions: unknown[];
 };
 
 export type CategoryResult = {
   categories: {
     category: string;
-    totalAmount: number;
+    totalAmount: string;
     transactionCount: number;
-    percentage: number;
+    percentage: string;
   }[];
   recentTransactions: unknown[];
 };
@@ -30,9 +28,9 @@ export type CategoryResult = {
 export type MonthlyResult = {
   monthly: {
     month: string;
-    income: number;
-    expense: number;
-    balance: number;
+    income: string;
+    expense: string;
+    balance: string;
   }[];
   recentTransactions: unknown[];
 };
@@ -40,6 +38,5 @@ export type MonthlyResult = {
 export type CategoryTrendsResult = {
   month: string;
   category: string;
-  amount: number;
+  amount: string;
 }[];
-

@@ -1,8 +1,6 @@
-// src/services/analytics.service.ts
-
 import { AnalyticsQueryInput, categoryTrendsQueryInput } from '../validators/analytics.validator';
 import prisma from '../infra/prisma';
-import { toNumber } from '../utils/decimal';
+import { parseMoney, add, subtract, sum, allocatePercentages, toApiString, Money } from '../utils/money';
 import {
   normalizeAnalyticsInput,
   clampRecentLimit,
@@ -11,7 +9,13 @@ import {
 import { Prisma } from '../generated/prisma';
 import { TransactionType } from '../generated/prisma';
 import {
-  getSummaryCache,setSummaryCache,getCategoryCache,setCategoryCache,getMonthlyCache,setMonthlyCache,getCategoryTrendsCache,setCategoryTrendsCache} from '../utils/redis/analyticsCache';
+  getSummaryCache, setSummaryCache,
+  getCategoryCache, setCategoryCache,
+  getMonthlyCache, setMonthlyCache,
+  getCategoryTrendsCache, setCategoryTrendsCache
+} from '../utils/redis/analyticsCache';
+
+const ZERO = parseMoney('0', { allowZero: true });
 
 const getRecentTransactions = async (
   userId: number,
@@ -39,9 +43,10 @@ export const summaryService = async (
   data: AnalyticsQueryInput,
   userId: number
 ) => {
-  const cached = await getSummaryCache(userId,data);
-  if(cached)return cached;
-  const filter = normalizeAnalyticsInput(data); // { from, to, type? }
+  const cached = await getSummaryCache(userId, data);
+  if (cached) return cached;
+
+  const filter = normalizeAnalyticsInput(data);
 
   const baseWhere = {
     userId,
@@ -73,16 +78,22 @@ export const summaryService = async (
     getRecentTransactions(userId, filter, 10),
   ]);
 
-  const totalIncome = toNumber(incomeResult._sum.amount);
-  const totalExpense = toNumber(expenseResult._sum.amount);
+  const totalIncome = incomeResult._sum.amount
+    ? parseMoney(incomeResult._sum.amount.toString())
+    : ZERO;
+  const totalExpense = expenseResult._sum.amount
+    ? parseMoney(expenseResult._sum.amount.toString())
+    : ZERO;
+
+  const balance = subtract(totalIncome, totalExpense);
 
   const result = {
-    totalIncome,
-    totalExpense,
-    balance: totalIncome - totalExpense,
+    totalIncome: toApiString(totalIncome),
+    totalExpense: toApiString(totalExpense),
+    balance: toApiString(balance),
     recentTransactions,
   };
-  await setSummaryCache(userId,data,result);
+  await setSummaryCache(userId, data, result);
   return result;
 };
 
@@ -91,8 +102,9 @@ export const categoryService = async (
   data: AnalyticsQueryInput,
   userId: number
 ) => {
-  const cached = await getCategoryCache(userId,data);
-  if(cached)return cached;
+  const cached = await getCategoryCache(userId, data);
+  if (cached) return cached;
+
   const filter = normalizeAnalyticsInput(data);
 
   const where = {
@@ -104,52 +116,52 @@ export const categoryService = async (
     ...(filter.type && { type: filter.type }),
   };
 
-  const [categories, recentTransactions] =
-  await Promise.all([
+  const [categories, recentTransactions] = await Promise.all([
     prisma.transaction.groupBy({
-      by:['category'],
+      by: ['category'],
       where,
-      _sum:{
-        amount:true
+      _sum: {
+        amount: true
       },
-      _count:{
-        id:true
+      _count: {
+        id: true
       },
-      orderBy:{
-        _sum:{
-          amount:'desc'
+      orderBy: {
+        _sum: {
+          amount: 'desc'
         }
       }
     }),
 
-    getRecentTransactions(
-      userId,
-      filter,
-      10
-    )
+    getRecentTransactions(userId, filter, 10)
   ]);
-  const totalCategoryAmount =
-  categories.reduce(
-    (acc,item)=>
-      acc +
-      toNumber(
-        item._sum.amount
-      ),
-    0
+
+  const categoryAmounts: Money[] = categories.map(item =>
+    item._sum.amount ? parseMoney(item._sum.amount.toString()) : ZERO
   );
 
+  const totalCategoryAmount = sum(categoryAmounts);
+
+  const percentages = totalCategoryAmount.isZero()
+    ? categoryAmounts.map(() => ZERO)
+    : allocatePercentages(categoryAmounts);
+
   const result = {
-  categories: categories.map((item)=>{
-      const totalAmount =toNumber(item._sum.amount);
+    categories: categories.map((item, index) => {
+      const totalAmount = item._sum.amount
+        ? parseMoney(item._sum.amount.toString())
+        : ZERO;
       return {
-        category:item.category,
-        totalAmount,
-        transactionCount:item._count.id,
-        percentage:totalCategoryAmount > 0? Number(((totalAmount / totalCategoryAmount) * 100).toFixed(2)): 0,
+        category: item.category,
+        totalAmount: toApiString(totalAmount),
+        transactionCount: item._count.id,
+        percentage: toApiString(percentages[index]!),
       };
-    }),recentTransactions};
-    await setCategoryCache(userId,data,result);
-    return result;
+    }),
+    recentTransactions
+  };
+  await setCategoryCache(userId, data, result);
+  return result;
 };
 
 // MONTHLY
@@ -157,8 +169,9 @@ export const monthlyService = async (
   data: AnalyticsQueryInput,
   userId: number
 ) => {
-  const cached = await getMonthlyCache(userId,data);
-  if(cached)return cached;
+  const cached = await getMonthlyCache(userId, data);
+  if (cached) return cached;
+
   const filter = normalizeAnalyticsInput(data);
 
   const transactions = await prisma.transaction.findMany({
@@ -182,28 +195,28 @@ export const monthlyService = async (
   const map = new Map<
     string,
     {
-      income: number;
-      expense: number;
+      income: Money;
+      expense: Money;
     }
   >();
 
   for (const tx of transactions) {
-    const month = tx.date.toISOString().slice(0, 7); // YYYY-MM
+    const month = tx.date.toISOString().slice(0, 7);
 
     if (!map.has(month)) {
       map.set(month, {
-        income: 0,
-        expense: 0,
+        income: ZERO,
+        expense: ZERO,
       });
     }
 
     const entry = map.get(month)!;
-    const amount = toNumber(tx.amount);
+    const amount = parseMoney(tx.amount.toString());
 
     if (tx.type === 'INCOME') {
-      entry.income += amount;
+      entry.income = add(entry.income, amount);
     } else {
-      entry.expense += amount;
+      entry.expense = add(entry.expense, amount);
     }
   }
 
@@ -212,9 +225,9 @@ export const monthlyService = async (
   const monthly = Array.from(map.entries())
     .map(([month, value]) => ({
       month,
-      income: value.income,
-      expense: value.expense,
-      balance: value.income - value.expense,
+      income: toApiString(value.income),
+      expense: toApiString(value.expense),
+      balance: toApiString(subtract(value.income, value.expense)),
     }))
     .sort((a, b) => a.month.localeCompare(b.month));
 
@@ -222,13 +235,17 @@ export const monthlyService = async (
     monthly,
     recentTransactions,
   };
-  await setMonthlyCache(userId,data,result);
+  await setMonthlyCache(userId, data, result);
   return result;
 };
 
-export const categoryTrendsService = async(data:categoryTrendsQueryInput,userId:number) =>{
-  const cached = await getCategoryTrendsCache(userId,data);
-  if(cached)return cached;
+export const categoryTrendsService = async (
+  data: categoryTrendsQueryInput,
+  userId: number
+) => {
+  const cached = await getCategoryTrendsCache(userId, data);
+  if (cached) return cached;
+
   const normalizedInputs = normalizeTrendsInput(data);
   const categoryFilter =
     normalizedInputs.category
@@ -260,14 +277,13 @@ export const categoryTrendsService = async(data:categoryTrendsQueryInput,userId:
         month ASC
     `
   );
+
   const trends = groups.map(item => ({
-      month:
-        item.month.toISOString().slice(0,7),
-      category:
-        item.category,
-      amount:
-        toNumber(item.amount)
-      }));
-  await setCategoryTrendsCache(userId,data,trends);    
-  return trends
-}
+    month: item.month.toISOString().slice(0, 7),
+    category: item.category,
+    amount: toApiString(parseMoney(item.amount.toString())),
+  }));
+
+  await setCategoryTrendsCache(userId, data, trends);
+  return trends;
+};
