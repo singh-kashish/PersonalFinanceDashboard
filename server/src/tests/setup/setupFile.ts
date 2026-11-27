@@ -2,6 +2,7 @@ import path from "path";
 import dotenv from "dotenv";
 import { assertTestDatabase } from "./testDbGuard";
 import { assertTestRedis } from "./testRedisGuard";
+import { initRedis, shutdownRedis } from "../../infra/redis";
 
 // Point DOTENV_CONFIG_PATH to server/.env.test before any module loads src/config/env.
 // This guarantees that any subsequent `import "dotenv/config"` inside application code
@@ -42,8 +43,13 @@ assertTestRedis(redisUrl);
 const { PrismaClient } = require("../../generated/prisma");
 const prisma = new PrismaClient();
 
+beforeAll(async () => {
+  await initRedis();
+});
+
 afterAll(async () => {
   await prisma.$disconnect();
+  await shutdownRedis();
 });
 
 async function truncateTables() {

@@ -4,7 +4,7 @@ import axios, {
   type AxiosRequestConfig,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import { getAccessToken, clearAccess } from '@/features/auth/AuthHelpers';
+import { getAccessToken } from '@/features/auth/AuthHelpers';
 import { refreshQueue } from '@/utils/refreshQueue';
 import { refreshAccessToken } from '@/features/auth/api/auth.api';
 import type { RefreshResponseApi } from '@/features/auth/auth.types';
